@@ -28,7 +28,7 @@ static void generic_dr_libs_frame_reader_loop(
 
 		if (frame + read_size >= num_frames)
 		{
-			read_size = num_frames - frame;
+			read_size = std::uint32_t(num_frames - frame);
 		}
 
 		interleaved_frames.resize(size_t(read_size) * num_channels);
@@ -524,7 +524,7 @@ AudioReader::AudioReader(const void* data, std::size_t data_size, AudioType type
 	make_memory_handlers(data, data_size);
 }
 
-void AudioReader::set_binary_frame_size(std::size_t frame_size)
+void AudioReader::set_binary_frame_size(int frame_size)
 {
 	binary_frame_size_ = frame_size;
 }

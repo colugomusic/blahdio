@@ -14,7 +14,7 @@ public:
 	struct Callbacks
 	{
 		using ShouldAbortFunc = std::function<bool()>;
-		using ReturnChunkFunc = std::function<void(std::uint64_t frame, const void* data, std::uint32_t size)>;
+		using ReturnChunkFunc = std::function<void(std::uint64_t first_frame_index, const void* data, std::uint32_t num_frames)>;
 
 		ShouldAbortFunc should_abort;
 		ReturnChunkFunc return_chunk;
@@ -26,8 +26,8 @@ public:
 	// Read from memory
 	AudioReader(const void* data, std::size_t data_size, AudioType type_hint = AudioType::None);
 
-	// Size in bytes of each frame to return when reading using AudioType::Binary
-	void set_binary_frame_size(std::size_t frame_size);
+	// Size in bytes of each frame to return when reading AudioType::Binary data
+	void set_binary_frame_size(int frame_size);
 
 	void read_header();
 	void read_frames(Callbacks callbacks, std::uint32_t chunk_size);
@@ -35,8 +35,11 @@ public:
 	int get_frame_size() const { return format_.frame_size; }
 	int get_num_channels() const { return format_.num_channels; }
 	std::uint64_t get_num_frames() const { return format_.num_frames; }
+
+	// These will always return zero when reading AudioType::Binary data
 	int get_sample_rate() const { return format_.sample_rate; }
 	int get_bit_depth() const { return format_.bit_depth; }
+
 	AudioType get_type() const { return active_type_handler_.type; }
 
 	struct TypeHandler

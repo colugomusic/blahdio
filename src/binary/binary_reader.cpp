@@ -15,12 +15,10 @@ void Reader::read_frames(Callbacks callbacks, std::uint32_t chunk_size)
 
 		if (frame + frames_to_read >= num_frames_)
 		{
-			frames_to_read = num_frames_ - frame;
+			frames_to_read = std::uint32_t(num_frames_ - frame);
 		}
 
-		const auto read_size = size_t(frames_to_read) * frame_size_;
-
-		std::vector<char> frame_data(read_size);
+		std::vector<char> frame_data(size_t(frames_to_read) * frame_size_);
 
 		read_chunk(frames_to_read, frame_data.data());
 
