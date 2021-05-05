@@ -8,7 +8,13 @@ include(CPM)
 # Header-only libraries #########################################
 CPMAddPackage("gh:mackron/dr_libs#master")
 CPMAddPackage("gh:mackron/miniaudio#master")
-CPMAddPackage("gh:nemtrif/utfcpp#master")
+
+CPMAddPackage(
+	NAME utfcpp
+	GITHUB_REPOSITORY nemtrif/utfcpp
+	GIT_TAG master
+	DOWNLOAD_ONLY YES
+)
 
 list(APPEND include_dirs
     ${dr_libs_SOURCE_DIR}
