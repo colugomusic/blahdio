@@ -30,8 +30,6 @@ list(APPEND SRC
     include/blahdio/audio_reader.h
     include/blahdio/audio_writer.h
     include/blahdio/audio_type.h
-    include/blahdio/frame_data.h
-    include/blahdio/interleaving.h
 
 	src/generic_reader.h
     src/audio_reader.cpp

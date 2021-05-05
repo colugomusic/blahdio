@@ -1,7 +1,6 @@
 #include <array>
 #include <stdexcept>
 #include "blahdio/audio_reader.h"
-#include "blahdio/interleaving.h"
 #include "dr_libs/dr_libs_utils.h"
 #include "wavpack/wavpack_file_reader.h"
 #include "wavpack/wavpack_memory_reader.h"

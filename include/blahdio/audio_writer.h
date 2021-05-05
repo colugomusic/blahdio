@@ -4,7 +4,6 @@
 #include <string>
 #include "audio_data_format.h"
 #include "audio_type.h"
-#include "frame_data.h"
 
 namespace blahdio {
 
