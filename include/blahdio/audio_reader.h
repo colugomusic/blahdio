@@ -10,7 +10,7 @@ namespace blahdio {
 class AudioReader
 {
 public:
-	
+
 	struct Callbacks
 	{
 		using ShouldAbortFunc = std::function<bool()>;
@@ -19,6 +19,12 @@ public:
 		ShouldAbortFunc should_abort;
 		ReturnChunkFunc return_chunk;
 	};
+	
+	// The reader will always read untyped binary data if type_hint == AudioType::Binary.
+	// Otherwise each audio type will be tried, starting with type_hint first.
+	
+	// AudioType::Binary will never be deduced automatically, it must
+	// be explicitly set here.
 
 	// Read from file
 	AudioReader(const std::string& utf8_path, AudioType type_hint = AudioType::None);
@@ -26,73 +32,29 @@ public:
 	// Read from memory
 	AudioReader(const void* data, std::size_t data_size, AudioType type_hint = AudioType::None);
 
+	~AudioReader();
+
 	// Size in bytes of each frame to return when reading AudioType::Binary data
 	void set_binary_frame_size(int frame_size);
 
 	void read_header();
 	void read_frames(Callbacks callbacks, std::uint32_t chunk_size);
 
-	int get_frame_size() const { return format_.frame_size; }
-	int get_num_channels() const { return format_.num_channels; }
-	std::uint64_t get_num_frames() const { return format_.num_frames; }
+	int get_frame_size() const;
+	int get_num_channels() const;
+	std::uint64_t get_num_frames() const;
 
 	// These will always return zero when reading AudioType::Binary data
-	int get_sample_rate() const { return format_.sample_rate; }
-	int get_bit_depth() const { return format_.bit_depth; }
+	int get_sample_rate() const;
+	int get_bit_depth() const;
 
-	AudioType get_type() const { return active_type_handler_.type; }
-
-	struct TypeHandler
-	{
-		using TryReadHeaderFunc = std::function<bool(AudioDataFormat*)>;
-		using ReadFramesFunc = std::function<void(Callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)>;
-
-		AudioType type = AudioType::None;
-
-		TryReadHeaderFunc try_read_header;
-		ReadFramesFunc read_frames;
-
-		operator bool() const { return type != AudioType::None; }
-	};
-
-	struct BinaryHandler
-	{
-		using ReadHeaderFunc = std::function<void(int frame_size, AudioDataFormat*)>;
-		using ReadFramesFunc = std::function<void(Callbacks, int frame_size, std::uint32_t chunk_size)>;
-
-		ReadHeaderFunc read_header;
-		ReadFramesFunc read_frames;
-	};
+	AudioType get_type() const;
 
 private:
 
-	TypeHandler flac_handler_;
-	TypeHandler mp3_handler_;
-	TypeHandler wav_handler_;
-	TypeHandler wavpack_handler_;
-	TypeHandler active_type_handler_;
-	BinaryHandler binary_handler_;
+	class Impl;
 
-	AudioType type_hint_ = AudioType::None;
-	AudioDataFormat format_;
-	int binary_frame_size_ = 1;
-
-	std::array<TypeHandler, 4> make_type_attempt_order(AudioType type);
-
-	void make_file_handlers(const std::string& utf8_path);
-	void make_memory_handlers(const void* data, std::size_t data_size);
-
-	void make_binary_file_handler(const std::string& utf8_path);
-	void make_binary_memory_handler(const void* data, std::size_t data_size);
-
-	void make_typed_file_handlers(const std::string& utf8_path);
-	void make_typed_memory_handlers(const void* data, std::size_t data_size);
-
-	void read_binary_header();
-	void read_typed_header();
-
-	void read_binary_frames(Callbacks callbacks, std::uint32_t chunk_size);
-	void read_typed_frames(Callbacks callbacks, std::uint32_t chunk_size);
+	Impl* impl_;
 };
 
 }
