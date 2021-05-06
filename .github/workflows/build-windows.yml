@@ -14,7 +14,7 @@ jobs:
           path: "%userprofile%/cpm_source_cache"
           key: ${{ runner.os }}-build-${{ env.cache-name }}
           restore-keys: |
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
       - name: Configure
         run: cmake . -DCPM_SOURCE_CACHE=%userprofile%/cpm_source_cache
