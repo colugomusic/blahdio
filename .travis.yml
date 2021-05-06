@@ -10,7 +10,7 @@ os:
   - linux
 
 install:
-  - if [ "$TRAVIS_OS_NAME" = "windows" ]; choco install visualstudio2019buildtools; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then choco install visualstudio2019buildtools; fi
   - choco upgrade cmake
 
 script:
