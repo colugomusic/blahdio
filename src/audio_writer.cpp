@@ -1,5 +1,6 @@
 #include <fstream>
 #include <stdexcept>
+#include <vector>
 #include <wavpack.h>
 #include <utf8.h>
 

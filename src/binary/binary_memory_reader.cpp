@@ -1,4 +1,5 @@
 #include "binary_memory_reader.h"
+#include <algorithm>
 #include <cmath>
 
 namespace blahdio {

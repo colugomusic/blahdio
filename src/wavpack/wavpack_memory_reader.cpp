@@ -1,4 +1,5 @@
 #include "wavpack_memory_reader.h"
+#include <algorithm>
 #include <cstdio>
 
 namespace blahdio {
