@@ -7,5 +7,5 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v2
       - run: echo "CPM_SOURCE_CACHE=$HOME/cpm_source_cache" >> $GITHUB_ENV
-      - run: echo "source cache is: ${{ env.CPM_SOURCE_CACHE }}"
+      - run: echo "source cache is ${{ env.CPM_SOURCE_CACHE }}"
       - run: cmake .
