@@ -7,5 +7,9 @@ branches:
 os:
   - windows
 
+install:
+  - choco install visualstudio2019buildtools
+  - choco upgrade cmake
+
 script:
  - cmake .
