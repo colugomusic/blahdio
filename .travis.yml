@@ -33,6 +33,13 @@ install:
       ;;
   esac
 
+before_cache:
+  case $TRAVIS_OS_NAME in
+    osx)
+      brew cleanup
+      ;;
+  esac
+
 script:
   - cmake . 
   - cmake --build .
@@ -40,4 +47,5 @@ script:
 cache:
   directories:
     - $HOME/AppData/Local/Temp/chocolatey
+    - $HOME/Library/Caches/Homebrew
     - $CPM_SOURCE_CACHE
