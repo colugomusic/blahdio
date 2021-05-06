@@ -7,13 +7,24 @@ include(CPM)
 CPMUsePackageLock(package-lock.cmake)
 
 # Header-only libraries #########################################
-CPMAddPackage("gh:mackron/dr_libs#master")
-CPMAddPackage("gh:mackron/miniaudio#master")
+CPMAddPackage(
+	NAME dr_libs
+	GITHUB_REPOSITORY "mackron/dr_libs"
+	GIT_TAG 343aa92
+	DOWNLOAD_ONLY YES
+)
+
+CPMAddPackage(
+	NAME miniaudio
+	GITHUB_REPOSITORY "mackron/miniaudio"
+	GIT_TAG 199d6a7
+	DOWNLOAD_ONLY YES
+)
 
 CPMAddPackage(
 	NAME utfcpp
 	GITHUB_REPOSITORY nemtrif/utfcpp
-	GIT_TAG master
+	GIT_TAG ddd38b3
 	DOWNLOAD_ONLY YES
 )
 
@@ -27,7 +38,13 @@ list(APPEND include_dirs
 # WavPack #######################################################
 set(WAVPACK_BUILD_COOLEDIT_PLUGIN OFF CACHE BOOL "Build CoolEdit plugin" FORCE)
 set(WAVPACK_BUILD_PROGRAMS OFF CACHE BOOL "Build programs" FORCE)
-CPMAddPackage("gh:colugomusic/wavpack#master")
+
+CPMAddPackage(
+	NAME wavpack
+	GITHUB_REPOSITORY "colugomusic/wavpack"
+	GIT_TAG 7349945
+)
+
 list(APPEND include_dirs ${wavpack_SOURCE_DIR}/include)
 list(APPEND link_libs wavpack)
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
