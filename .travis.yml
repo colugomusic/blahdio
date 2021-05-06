@@ -23,7 +23,7 @@ install:
       brew upgrade cmake
       ;;
     linux)
-      apt-get install --only-upgrade cmake
+      sudo apt-get install --only-upgrade cmake
       ;;
   esac
 
