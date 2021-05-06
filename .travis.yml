@@ -1,3 +1,6 @@
+env:
+ - CPM_SOURCE_CACHE=$HOME/cpm_source_cache
+
 language: cpp
 
 branches:
@@ -10,9 +13,25 @@ os:
   - linux
 
 install:
-  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then choco install visualstudio2019buildtools; fi
-  - choco upgrade cmake
+- |-
+    case $TRAVIS_OS_NAME in
+      windows)
+        choco install visualstudio2019buildtools
+        choco upgrade cmake
+        ;;
+      osx)
+        brew upgrade cmake
+        ;;
+      linux)
+        apt-get install --only-upgrade cmake
+        ;;
+    esac
 
 script:
- - cmake .
+ - cmake . 
  - cmake --build .
+
+ cache:
+    directories:
+    - $HOME/AppData/Local/Temp/chocolatey
+    - $CPM_SOURCE_CACHE
