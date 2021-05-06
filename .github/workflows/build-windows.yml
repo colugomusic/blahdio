@@ -1,0 +1,9 @@
+name: Build Windows
+on: [push]
+jobs:
+  Build-Windows:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - run: cmake .
