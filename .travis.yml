@@ -6,10 +6,13 @@ branches:
 
 os:
   - windows
+  - osx
+  - linux
 
 install:
-  - choco install visualstudio2019buildtools
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; choco install visualstudio2019buildtools
   - choco upgrade cmake
 
 script:
  - cmake .
+ - cmake --build .
