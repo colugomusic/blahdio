@@ -4,7 +4,9 @@ jobs:
   Build-Windows:
     runs-on: windows-latest
     steps:
-      - run: echo $(git --version)
+      - name: Get latest version
+        run: echo "WAVPACK_MASTER_REF=$((git ls-remote https://github.com/colugomusic/wavpack.git master).split()[0]) | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
+      - run: echo ${{ env.WAVPACK_MASTER_REF }}
       - name: Check out repository code
         uses: actions/checkout@v2
       - name: Restore CPM sources cache
