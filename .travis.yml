@@ -3,10 +3,6 @@ env:
 
 language: cpp
 
-branches:
-  only:
-  - travis
-
 os:
   - windows
   - osx
