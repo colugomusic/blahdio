@@ -1,8 +1,11 @@
-language: c++
+language: cpp
 
 branches:
   only:
   - travis
+
+os:
+  - windows
 
 script:
  - cmake .
