@@ -1,7 +1,7 @@
 name: Build Linux
 on: [push]
 jobs:
-  Build-Windows:
+  Build-Linux:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code

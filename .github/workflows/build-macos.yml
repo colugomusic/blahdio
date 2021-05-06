@@ -1,7 +1,7 @@
 name: Build macOS
 on: [push]
 jobs:
-  Build-Windows:
+  Build-macOS:
     runs-on: macos-latest
     steps:
       - name: Check out repository code
