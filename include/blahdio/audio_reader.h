@@ -6,6 +6,7 @@
 #include "audio_type.h"
 
 namespace blahdio {
+namespace impl { class AudioReader; }
 
 class AudioReader
 {
@@ -52,9 +53,7 @@ public:
 
 private:
 
-	class Impl;
-
-	Impl* impl_;
+	impl::AudioReader* impl_;
 };
 
 }

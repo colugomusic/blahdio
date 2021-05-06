@@ -8,18 +8,19 @@
 #include "binary/binary_memory_reader.h"
 
 namespace blahdio {
+namespace impl {
 
-class AudioReader::Impl
+class AudioReader
 {
 public:
 
-	AudioReader::Impl(const std::string& utf8_path, AudioType type_hint);
-	AudioReader::Impl(const void* data, std::size_t data_size, AudioType type_hint);
+	AudioReader(const std::string& utf8_path, AudioType type_hint);
+	AudioReader(const void* data, std::size_t data_size, AudioType type_hint);
 
 	void set_binary_frame_size(int frame_size);
 
 	void read_header();
-	void read_frames(Callbacks callbacks, std::uint32_t chunk_size);
+	void read_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size);
 
 	const AudioDataFormat& get_format() const { return format_; }
 
@@ -28,7 +29,7 @@ public:
 	struct TypeHandler
 	{
 		using TryReadHeaderFunc = std::function<bool(AudioDataFormat*)>;
-		using ReadFramesFunc = std::function<void(Callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)>;
+		using ReadFramesFunc = std::function<void(blahdio::AudioReader::Callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)>;
 
 		AudioType type = AudioType::None;
 
@@ -41,7 +42,7 @@ public:
 	struct BinaryHandler
 	{
 		using ReadHeaderFunc = std::function<void(int frame_size, AudioDataFormat*)>;
-		using ReadFramesFunc = std::function<void(Callbacks, int frame_size, std::uint32_t chunk_size)>;
+		using ReadFramesFunc = std::function<void(blahdio::AudioReader::Callbacks, int frame_size, std::uint32_t chunk_size)>;
 
 		ReadHeaderFunc read_header;
 		ReadFramesFunc read_frames;
@@ -74,8 +75,8 @@ private:
 	void read_binary_header();
 	void read_typed_header();
 
-	void read_binary_frames(Callbacks callbacks, std::uint32_t chunk_size);
-	void read_typed_frames(Callbacks callbacks, std::uint32_t chunk_size);
+	void read_binary_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size);
+	void read_typed_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size);
 
 	static TypeHandler make_flac_handler(const std::string& utf8_path);
 	static TypeHandler make_flac_handler(const void* data, std::size_t data_size);
@@ -90,7 +91,7 @@ private:
 };
 
 static void generic_dr_libs_frame_reader_loop(
-	AudioReader::Callbacks callbacks,
+	blahdio::AudioReader::Callbacks callbacks,
 	std::function<bool(float*, std::uint32_t)> read_func,
 	std::uint32_t chunk_size,
 	int num_channels,
@@ -173,7 +174,7 @@ static AudioDataFormat get_header_info(const GenericReader& reader)
 	return out;
 }
 
-static void read_frame_data(drflac* flac, AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+static void read_frame_data(drflac* flac, blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
 {
 	const auto read_func = [flac](float* buffer, std::uint32_t read_size)
 	{
@@ -183,7 +184,7 @@ static void read_frame_data(drflac* flac, AudioReader::Callbacks callbacks, cons
 	generic_dr_libs_frame_reader_loop(callbacks, read_func, chunk_size, format.num_channels, format.num_frames);
 }
 
-static void read_frame_data(drmp3* mp3, AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+static void read_frame_data(drmp3* mp3, blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
 {
 	const auto read_func = [mp3](float* buffer, std::uint32_t read_size)
 	{
@@ -193,7 +194,7 @@ static void read_frame_data(drmp3* mp3, AudioReader::Callbacks callbacks, const 
 	generic_dr_libs_frame_reader_loop(callbacks, read_func, chunk_size, format.num_channels, format.num_frames);
 }
 
-static void read_frame_data(drwav* wav, AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+static void read_frame_data(drwav* wav, blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
 {
 	const auto read_func = [wav](float* buffer, std::uint32_t read_size)
 	{
@@ -203,7 +204,7 @@ static void read_frame_data(drwav* wav, AudioReader::Callbacks callbacks, const 
 	generic_dr_libs_frame_reader_loop(callbacks, read_func, chunk_size, format.num_channels, format.num_frames);
 }
 
-auto AudioReader::Impl::make_flac_handler(const std::string& utf8_path) -> TypeHandler
+auto AudioReader::make_flac_handler(const std::string& utf8_path) -> TypeHandler
 {
 	const auto try_read_header = [utf8_path](AudioDataFormat* format) -> bool
 	{
@@ -218,7 +219,7 @@ auto AudioReader::Impl::make_flac_handler(const std::string& utf8_path) -> TypeH
 		return true;
 	};
 
-	const auto read_frames = [utf8_path](AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+	const auto read_frames = [utf8_path](blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
 	{
 		auto flac = dr_libs::flac::open_file(utf8_path);
 
@@ -232,7 +233,7 @@ auto AudioReader::Impl::make_flac_handler(const std::string& utf8_path) -> TypeH
 	return { AudioType::FLAC, try_read_header, read_frames };
 }
 
-auto AudioReader::Impl::make_flac_handler(const void* data, std::size_t data_size) -> TypeHandler
+auto AudioReader::make_flac_handler(const void* data, std::size_t data_size) -> TypeHandler
 {
 	const auto try_read_header = [data, data_size](AudioDataFormat* format) -> bool
 	{
@@ -247,7 +248,7 @@ auto AudioReader::Impl::make_flac_handler(const void* data, std::size_t data_siz
 		return true;
 	};
 
-	const auto read_frames = [data, data_size](AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+	const auto read_frames = [data, data_size](blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
 	{
 		auto flac = drflac_open_memory(data, data_size, nullptr);
 
@@ -261,7 +262,7 @@ auto AudioReader::Impl::make_flac_handler(const void* data, std::size_t data_siz
 	return { AudioType::FLAC, try_read_header, read_frames };
 }
 
-auto AudioReader::Impl::make_mp3_handler(const std::string& utf8_path) -> TypeHandler
+auto AudioReader::make_mp3_handler(const std::string& utf8_path) -> TypeHandler
 {
 	const auto try_read_header = [utf8_path](AudioDataFormat* format)
 	{
@@ -276,7 +277,7 @@ auto AudioReader::Impl::make_mp3_handler(const std::string& utf8_path) -> TypeHa
 		return true;
 	};
 
-	const auto read_frames = [utf8_path](AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+	const auto read_frames = [utf8_path](blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
 	{
 		drmp3 mp3;
 
@@ -290,7 +291,7 @@ auto AudioReader::Impl::make_mp3_handler(const std::string& utf8_path) -> TypeHa
 	return { AudioType::MP3, try_read_header, read_frames };
 }
 
-auto AudioReader::Impl::make_mp3_handler(const void* data, std::size_t data_size) -> TypeHandler
+auto AudioReader::make_mp3_handler(const void* data, std::size_t data_size) -> TypeHandler
 {
 	const auto try_read_header = [data, data_size](AudioDataFormat* format) -> bool
 	{
@@ -305,7 +306,7 @@ auto AudioReader::Impl::make_mp3_handler(const void* data, std::size_t data_size
 		return true;
 	};
 
-	const auto read_frames = [data, data_size](AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+	const auto read_frames = [data, data_size](blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
 	{
 		drmp3 mp3;
 
@@ -319,7 +320,7 @@ auto AudioReader::Impl::make_mp3_handler(const void* data, std::size_t data_size
 	return { AudioType::MP3, try_read_header, read_frames };
 }
 
-auto AudioReader::Impl::make_wav_handler(const std::string& utf8_path) -> TypeHandler
+auto AudioReader::make_wav_handler(const std::string& utf8_path) -> TypeHandler
 {
 	const auto try_read_header = [utf8_path](AudioDataFormat* format)
 	{
@@ -334,7 +335,7 @@ auto AudioReader::Impl::make_wav_handler(const std::string& utf8_path) -> TypeHa
 		return true;
 	};
 
-	const auto read_frames = [utf8_path](AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+	const auto read_frames = [utf8_path](blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
 	{
 		drwav wav;
 
@@ -348,7 +349,7 @@ auto AudioReader::Impl::make_wav_handler(const std::string& utf8_path) -> TypeHa
 	return { AudioType::WAV, try_read_header, read_frames };
 }
 
-auto AudioReader::Impl::make_wav_handler(const void* data, std::size_t data_size) -> TypeHandler
+auto AudioReader::make_wav_handler(const void* data, std::size_t data_size) -> TypeHandler
 {
 	const auto try_read_header = [data, data_size](AudioDataFormat* format)
 	{
@@ -363,7 +364,7 @@ auto AudioReader::Impl::make_wav_handler(const void* data, std::size_t data_size
 		return true;
 	};
 
-	const auto read_frames = [data, data_size](AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+	const auto read_frames = [data, data_size](blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
 	{
 		drwav wav;
 
@@ -377,7 +378,7 @@ auto AudioReader::Impl::make_wav_handler(const void* data, std::size_t data_size
 	return { AudioType::WAV, try_read_header, read_frames };
 }
 
-auto AudioReader::Impl::make_wavpack_handler(const std::string& utf8_path) -> TypeHandler
+auto AudioReader::make_wavpack_handler(const std::string& utf8_path) -> TypeHandler
 {
 	const auto try_read_header = [utf8_path](AudioDataFormat* format) -> bool
 	{
@@ -390,7 +391,7 @@ auto AudioReader::Impl::make_wavpack_handler(const std::string& utf8_path) -> Ty
 		return true;
 	};
 
-	const auto read_frames = [utf8_path](AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+	const auto read_frames = [utf8_path](blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
 	{
 		wavpack::FileReader reader(utf8_path);
 		wavpack::Reader::Callbacks reader_callbacks;
@@ -404,7 +405,7 @@ auto AudioReader::Impl::make_wavpack_handler(const std::string& utf8_path) -> Ty
 	return { AudioType::WavPack, try_read_header, read_frames };
 }
 
-auto AudioReader::Impl::make_wavpack_handler(const void* data, std::size_t data_size) -> TypeHandler
+auto AudioReader::make_wavpack_handler(const void* data, std::size_t data_size) -> TypeHandler
 {
 	const auto try_read_header = [data, data_size](AudioDataFormat* format) -> bool
 	{
@@ -417,7 +418,7 @@ auto AudioReader::Impl::make_wavpack_handler(const void* data, std::size_t data_
 		return true;
 	};
 
-	const auto read_frames = [data, data_size](AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+	const auto read_frames = [data, data_size](blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
 	{
 		wavpack::MemoryReader reader(data, data_size);
 		wavpack::Reader::Callbacks reader_callbacks;
@@ -431,7 +432,7 @@ auto AudioReader::Impl::make_wavpack_handler(const void* data, std::size_t data_
 	return { AudioType::WavPack, try_read_header, read_frames };
 }
 
-auto AudioReader::Impl::make_binary_handler(const std::string& utf8_path) -> BinaryHandler
+auto AudioReader::make_binary_handler(const std::string& utf8_path) -> BinaryHandler
 {
 	const auto read_header = [utf8_path](int frame_size, AudioDataFormat* format)
 	{
@@ -440,7 +441,7 @@ auto AudioReader::Impl::make_binary_handler(const std::string& utf8_path) -> Bin
 		*format = get_header_info(reader);
 	};
 
-	const auto read_frames = [utf8_path](AudioReader::Callbacks callbacks, int frame_size, std::uint32_t chunk_size)
+	const auto read_frames = [utf8_path](blahdio::AudioReader::Callbacks callbacks, int frame_size, std::uint32_t chunk_size)
 	{
 		binary::FileReader reader(utf8_path, frame_size);
 		binary::FileReader::Callbacks reader_callbacks;
@@ -454,7 +455,7 @@ auto AudioReader::Impl::make_binary_handler(const std::string& utf8_path) -> Bin
 	return { read_header, read_frames };
 }
 
-auto AudioReader::Impl::make_binary_handler(const void* data, std::size_t data_size) -> BinaryHandler
+auto AudioReader::make_binary_handler(const void* data, std::size_t data_size) -> BinaryHandler
 {
 	const auto read_header = [data, data_size](int frame_size, AudioDataFormat* format)
 	{
@@ -463,7 +464,7 @@ auto AudioReader::Impl::make_binary_handler(const void* data, std::size_t data_s
 		*format = get_header_info(reader);
 	};
 
-	const auto read_frames = [data, data_size](AudioReader::Callbacks callbacks, int frame_size, std::uint32_t chunk_size)
+	const auto read_frames = [data, data_size](blahdio::AudioReader::Callbacks callbacks, int frame_size, std::uint32_t chunk_size)
 	{
 		binary::MemoryReader reader(frame_size, data, data_size);
 		binary::MemoryReader::Callbacks reader_callbacks;
@@ -477,7 +478,7 @@ auto AudioReader::Impl::make_binary_handler(const void* data, std::size_t data_s
 	return { read_header, read_frames };
 }
 
-auto AudioReader::Impl::make_type_attempt_order(AudioType type_hint) -> std::array<TypeHandler, 4>
+auto AudioReader::make_type_attempt_order(AudioType type_hint) -> std::array<TypeHandler, 4>
 {
 	switch (type_hint)
 	{
@@ -489,7 +490,7 @@ auto AudioReader::Impl::make_type_attempt_order(AudioType type_hint) -> std::arr
 	}
 }
 
-void AudioReader::Impl::make_file_handlers(const std::string& utf8_path)
+void AudioReader::make_file_handlers(const std::string& utf8_path)
 {
 	switch (type_hint_)
 	{
@@ -507,7 +508,7 @@ void AudioReader::Impl::make_file_handlers(const std::string& utf8_path)
 	}
 }
 
-void AudioReader::Impl::make_memory_handlers(const void* data, std::size_t data_size)
+void AudioReader::make_memory_handlers(const void* data, std::size_t data_size)
 {
 	switch (type_hint_)
 	{
@@ -525,17 +526,17 @@ void AudioReader::Impl::make_memory_handlers(const void* data, std::size_t data_
 	}
 }
 
-void AudioReader::Impl::make_binary_file_handler(const std::string& utf8_path)
+void AudioReader::make_binary_file_handler(const std::string& utf8_path)
 {
 	binary_handler_ = make_binary_handler(utf8_path);
 }
 
-void AudioReader::Impl::make_binary_memory_handler(const void* data, std::size_t data_size)
+void AudioReader::make_binary_memory_handler(const void* data, std::size_t data_size)
 {
 	binary_handler_ = make_binary_handler(data, data_size);
 }
 
-void AudioReader::Impl::make_typed_file_handlers(const std::string& utf8_path)
+void AudioReader::make_typed_file_handlers(const std::string& utf8_path)
 {
 	flac_handler_ = make_flac_handler(utf8_path);
 	mp3_handler_ = make_mp3_handler(utf8_path);
@@ -543,7 +544,7 @@ void AudioReader::Impl::make_typed_file_handlers(const std::string& utf8_path)
 	wavpack_handler_ = make_wavpack_handler(utf8_path);
 }
 
-void AudioReader::Impl::make_typed_memory_handlers(const void* data, std::size_t data_size)
+void AudioReader::make_typed_memory_handlers(const void* data, std::size_t data_size)
 {
 	flac_handler_ = make_flac_handler(data, data_size);
 	mp3_handler_ = make_mp3_handler(data, data_size);
@@ -551,12 +552,12 @@ void AudioReader::Impl::make_typed_memory_handlers(const void* data, std::size_t
 	wavpack_handler_ = make_wavpack_handler(data, data_size);
 }
 
-void AudioReader::Impl::read_binary_header()
+void AudioReader::read_binary_header()
 {
 	binary_handler_.read_header(binary_frame_size_, &format_);
 }
 
-void AudioReader::Impl::read_typed_header()
+void AudioReader::read_typed_header()
 {
 	const auto type_handlers_to_try = make_type_attempt_order(type_hint_);
 
@@ -575,12 +576,12 @@ void AudioReader::Impl::read_typed_header()
 	throw std::runtime_error("File format not recognized");
 }
 
-void AudioReader::Impl::read_binary_frames(Callbacks callbacks, std::uint32_t chunk_size)
+void AudioReader::read_binary_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size)
 {
 	binary_handler_.read_frames(callbacks, binary_frame_size_, chunk_size);
 }
 
-void AudioReader::Impl::read_typed_frames(Callbacks callbacks, std::uint32_t chunk_size)
+void AudioReader::read_typed_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size)
 {
 	// If the header hasn't been read yet, read it now
 	if (active_type_handler_.type == AudioType::None)
@@ -592,24 +593,24 @@ void AudioReader::Impl::read_typed_frames(Callbacks callbacks, std::uint32_t chu
 	active_type_handler_.read_frames(callbacks, format_, chunk_size);
 }
 
-AudioReader::Impl::Impl(const std::string& utf8_path, AudioType type_hint)
+AudioReader::AudioReader(const std::string& utf8_path, AudioType type_hint)
 	: type_hint_(type_hint)
 {
 	make_file_handlers(utf8_path);
 }
 
-AudioReader::Impl::Impl(const void* data, std::size_t data_size, AudioType type_hint)
+AudioReader::AudioReader(const void* data, std::size_t data_size, AudioType type_hint)
 	: type_hint_(type_hint)
 {
 	make_memory_handlers(data, data_size);
 }
 
-void AudioReader::Impl::set_binary_frame_size(int frame_size)
+void AudioReader::set_binary_frame_size(int frame_size)
 {
 	binary_frame_size_ = frame_size;
 }
 
-void AudioReader::Impl::read_header()
+void AudioReader::read_header()
 {
 	switch (type_hint_)
 	{
@@ -627,7 +628,7 @@ void AudioReader::Impl::read_header()
 	}
 }
 
-void AudioReader::Impl::read_frames(Callbacks callbacks, std::uint32_t chunk_size)
+void AudioReader::read_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size)
 {
 	switch (type_hint_)
 	{
@@ -645,13 +646,15 @@ void AudioReader::Impl::read_frames(Callbacks callbacks, std::uint32_t chunk_siz
 	}
 }
 
+} // impl
+
 AudioReader::AudioReader(const std::string& utf8_path, AudioType type_hint)
-	: impl_(new Impl(utf8_path, type_hint))
+	: impl_(new impl::AudioReader(utf8_path, type_hint))
 {
 }
 
 AudioReader::AudioReader(const void* data, std::size_t data_size, AudioType type_hint)
-	: impl_(new Impl(data, data_size, type_hint))
+	: impl_(new impl::AudioReader(data, data_size, type_hint))
 {
 }
 

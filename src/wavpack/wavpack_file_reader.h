@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "wavpack_reader.h"
 
 namespace blahdio {
