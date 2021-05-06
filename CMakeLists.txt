@@ -37,7 +37,9 @@ list(APPEND include_dirs
 
 # WavPack #######################################################
 set(WAVPACK_BUILD_COOLEDIT_PLUGIN OFF CACHE BOOL "Build CoolEdit plugin" FORCE)
+set(WAVPACK_BUILD_WINAMP_PLUGIN OFF CACHE BOOL "Build WinAmp plugin" FORCE)
 set(WAVPACK_BUILD_PROGRAMS OFF CACHE BOOL "Build programs" FORCE)
+set(WAVPACK_BUILD_DOCS OFF CACHE BOOL "Build documentation" FORCE)
 set(BUILD_TESTING OFF CACHE BOOL "Build tests" FORCE)
 CPMAddPackage("gh:colugomusic/wavpack#master")
 list(APPEND include_dirs ${wavpack_SOURCE_DIR}/include)
