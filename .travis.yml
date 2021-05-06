@@ -1,4 +1,8 @@
 language: c++
 
+branches:
+  only:
+  - travis
+
 script:
  - cmake .
