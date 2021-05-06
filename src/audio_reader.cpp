@@ -1,5 +1,6 @@
 #include <array>
 #include <stdexcept>
+#include <vector>
 #include "blahdio/audio_reader.h"
 #include "dr_libs/dr_libs_utils.h"
 #include "wavpack/wavpack_file_reader.h"
