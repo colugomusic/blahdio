@@ -6,15 +6,18 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-      - name: Cache CPM sources
+      - name: Restore CPM sources cache
         uses: actions/cache@v2
         env:
           cache-name: cache-cpm-sources
         with:
-          path: "%userprofile%/cpm_source_cache"
-          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          path: "cpm_source_cache"
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }}
           restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
       - name: Configure
-        run: cmake . -DCPM_SOURCE_CACHE=%userprofile%/cpm_source_cache
+        run: cmake . -DCPM_SOURCE_CACHE=cpm_source_cache
+      - name: Build
+        run: cmake --build . --Config Release

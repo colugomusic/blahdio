@@ -4,6 +4,7 @@ project(blahdio)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
 
 include(CPM)
+CPMUsePackageLock(package-lock.cmake)
 
 # Header-only libraries #########################################
 CPMAddPackage("gh:mackron/dr_libs#master")
