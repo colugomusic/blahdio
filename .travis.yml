@@ -1,5 +1,6 @@
 env:
   - CPM_SOURCE_CACHE=$HOME/cpm_source_cache
+  - MSBUILD_PATH="C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/MSBuild/Current/Bin"
 
 language: cpp
 
@@ -14,7 +15,8 @@ install:
 - |-
   case $TRAVIS_OS_NAME in
     windows)
-      choco install visualstudio2019buildtools
+      choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+      export PATH=$MSBUILD_PATH:$PATH
       choco upgrade cmake
       ;;
     osx)
