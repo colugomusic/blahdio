@@ -1,5 +1,5 @@
 env:
- - CPM_SOURCE_CACHE=$HOME/cpm_source_cache
+  - CPM_SOURCE_CACHE=$HOME/cpm_source_cache
 
 language: cpp
 
@@ -13,7 +13,7 @@ os:
   - linux
 
 install:
-- |-
+  - |-
     case $TRAVIS_OS_NAME in
       windows)
         choco install visualstudio2019buildtools
@@ -28,8 +28,8 @@ install:
     esac
 
 script:
- - cmake . 
- - cmake --build .
+  - cmake . 
+  - cmake --build .
 
  cache:
     directories:
