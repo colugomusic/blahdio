@@ -2,14 +2,14 @@
 
 This is an audio file reader/writer library which supports the following file types:
 
-## Reading
+#### Reading
 - WAV
 - MP3
 - FLAC
 - WavPack
 - Untyped data
 
-## Writing
+#### Writing
 - WAV
 - WavPack
 
