@@ -14,8 +14,8 @@ public:
 	struct Callbacks
 	{
 		using ShouldAbortFunc = std::function<bool()>;
-		using ReportProgressFunc = std::function<void(int frames_done)>;
-		using GetNextChunkFunc = std::function<void(float*, int, std::uint32_t)>;
+		using ReportProgressFunc = std::function<void(std::uint64_t frames_done)>;
+		using GetNextChunkFunc = std::function<void(float*, std::uint64_t, std::uint32_t)>;
 
 		ShouldAbortFunc should_abort;
 		ReportProgressFunc report_progress;

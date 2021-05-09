@@ -5,8 +5,8 @@
 #include <utf8.h>
 
 #include "blahdio/audio_writer.h"
-#include "dr_libs/dr_libs_utils.h"
-#include "miniaudio/blahdio_miniaudio.h"
+#include "mackron/blahdio_dr_libs.h"
+#include "mackron/blahdio_miniaudio.h"
 
 namespace blahdio {
 
@@ -83,7 +83,7 @@ static void drwav_write_frames(drwav* wav, AudioWriter::Callbacks callbacks, con
 
 		if (frame + write_size >= format.num_frames)
 		{
-			write_size = format.num_frames - frame;
+			write_size = std::uint32_t(format.num_frames - frame);
 		}
 
 		std::vector<float> interleaved_frames(size_t(write_size) * format.num_channels);
@@ -194,7 +194,7 @@ static void wavpack_write_file(WavpackBlockOutput blockout, void* id, const Audi
 
 		if (frame + write_size >= format.num_frames)
 		{
-			write_size = format.num_frames - frame;
+			write_size = std::uint32_t(format.num_frames - frame);
 		}
 
 		std::vector<float> interleaved_frames(size_t(write_size) * format.num_channels);
