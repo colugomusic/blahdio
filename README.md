@@ -74,6 +74,6 @@ reader_callbacks.return_chunk = [](std::uint64_t frame, const void* data, std::u
 };
 
 // Read file 512 frames at a time
-reader.read_frames(reader_callbacks, 512); // May throw an exception if an error
+reader.read_frames(reader_callbacks, 512); // Will throw an exception if an error
                                            // occurs during reading
 ```
