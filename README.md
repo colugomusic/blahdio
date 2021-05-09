@@ -26,6 +26,10 @@ Blahdio is implemented using these libraries:
 ### Reading audio data from a file
 
 ```c++
+#include <blahdio/audio_reader.h>
+
+...
+
 // Assume that the file type is WAV. Blahdio will try that first, but if it fails
 // to read a valid WAV header it will also try MP3, FLAC and WavPack.
 blahdio::AudioReader reader(utf8_file_path, blahdio::AudioType::WAV);
