@@ -50,7 +50,7 @@ reader_callbacks.should_abort = []()
   return false;
 };
 
-reader_callbacks.return_chunk = [callbacks](std::uint64_t frame, const void* data, std::uint32_t size)
+reader_callbacks.return_chunk = [](std::uint64_t frame, const void* data, std::uint32_t size)
 {
   // The library calls this for each chunk of audio data it reads.
   
