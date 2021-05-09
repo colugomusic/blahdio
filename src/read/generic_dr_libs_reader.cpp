@@ -1,5 +1,6 @@
 #include "generic_dr_libs_reader.h"
 #include <stdexcept>
+#include <vector>
 
 namespace blahdio {
 namespace read {
