@@ -3,6 +3,7 @@
 #include <cstdio>
 
 namespace blahdio {
+namespace read {
 namespace wavpack {
 
 void MemoryReader::init_stream_reader()
@@ -122,4 +123,4 @@ WavpackContext* MemoryReader::open()
 	return WavpackOpenFileInputEx64(&stream_reader_, &stream_, nullptr, error, flags, 0);
 }
 
-}}
+}}}

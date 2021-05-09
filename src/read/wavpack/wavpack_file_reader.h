@@ -4,6 +4,7 @@
 #include "wavpack_reader.h"
 
 namespace blahdio {
+namespace read {
 namespace wavpack {
 
 class FileReader : public Reader
@@ -17,4 +18,4 @@ public:
 	FileReader(const std::string& utf8_path);
 };
 
-}}
+}}}

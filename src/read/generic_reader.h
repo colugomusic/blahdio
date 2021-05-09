@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <functional>
+#include "blahdio/audio_data_format.h"
 
 namespace blahdio {
 
@@ -25,6 +26,19 @@ public:
 	int get_bit_depth() const { return bit_depth_; }
 
 	virtual void read_frames(Callbacks callbacks, std::uint32_t chunk_size) = 0;
+
+	AudioDataFormat get_header_info() const
+	{
+		AudioDataFormat out;
+
+		out.frame_size = get_frame_size();
+		out.num_channels = get_num_channels();
+		out.num_frames = get_num_frames();
+		out.sample_rate = get_sample_rate();
+		out.bit_depth = get_bit_depth();
+
+		return out;
+	}
 
 protected:
 

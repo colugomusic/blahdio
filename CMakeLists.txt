@@ -46,35 +46,58 @@ list(APPEND include_dirs ${wavpack_SOURCE_DIR}/include)
 list(APPEND link_libs wavpack)
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-list(APPEND SRC
+list(APPEND PUBLIC_HEADERS
     include/blahdio/audio_data_format.h
     include/blahdio/audio_reader.h
     include/blahdio/audio_writer.h
     include/blahdio/audio_type.h
-
-	src/generic_reader.h
-    src/audio_reader.cpp
-    src/audio_writer.cpp
-    src/dr_libs/dr_libs_impl.cpp
-	src/dr_libs/dr_libs_utils.h
-	src/dr_libs/dr_libs_utils.cpp
-	src/miniaudio/blahdio_miniaudio.h
-	src/miniaudio/blahdio_miniaudio.cpp
-	src/binary/binary_file_reader.h
-	src/binary/binary_file_reader.cpp
-	src/binary/binary_memory_reader.h
-	src/binary/binary_memory_reader.cpp
-	src/binary/binary_reader.h
-	src/binary/binary_reader.cpp
-	src/wavpack/wavpack_file_reader.h
-	src/wavpack/wavpack_file_reader.cpp
-	src/wavpack/wavpack_memory_reader.h
-	src/wavpack/wavpack_memory_reader.cpp
-	src/wavpack/wavpack_reader.h
-	src/wavpack/wavpack_reader.cpp
 )
 
-add_library(${PROJECT_NAME} STATIC ${SRC})
+list(APPEND SRC
+	src/mackron/blahdio_dr_libs.h
+	src/mackron/blahdio_dr_libs.cpp
+	src/mackron/blahdio_miniaudio.h
+	src/mackron/blahdio_miniaudio.cpp
+	
+    src/read/audio_reader.cpp
+	src/read/generic_dr_libs_reader.h
+	src/read/generic_dr_libs_reader.cpp
+	src/read/generic_reader.h
+	src/read/typed_read_handler.h
+	src/read/typed_read_handler.cpp
+
+	src/read/binary/binary_file_reader.h
+	src/read/binary/binary_file_reader.cpp
+	src/read/binary/binary_memory_reader.h
+	src/read/binary/binary_memory_reader.cpp
+	src/read/binary/binary_reader.h
+	src/read/binary/binary_reader.cpp
+
+	src/read/flac/flac_reader.h
+	src/read/flac/flac_reader.cpp
+
+	src/read/mp3/mp3_reader.h
+	src/read/mp3/mp3_reader.cpp
+
+	src/read/wav/wav_reader.h
+	src/read/wav/wav_reader.cpp
+
+	src/read/wavpack/wavpack_file_reader.h
+	src/read/wavpack/wavpack_file_reader.cpp
+	src/read/wavpack/wavpack_memory_reader.h
+	src/read/wavpack/wavpack_memory_reader.cpp
+	src/read/wavpack/wavpack_reader.h
+	src/read/wavpack/wavpack_reader.cpp
+	
+    src/write/audio_writer.cpp
+)
+
+# VS source groups ##############################################
+source_group(TREE ${CMAKE_CURRENT_LIST_DIR}/include/blahdio PREFIX "public headers" FILES ${PUBLIC_HEADERS})
+source_group(TREE ${CMAKE_CURRENT_LIST_DIR}/src PREFIX "src" FILES ${SRC})
+#xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+add_library(${PROJECT_NAME} STATIC ${PUBLIC_HEADERS} ${SRC})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     include

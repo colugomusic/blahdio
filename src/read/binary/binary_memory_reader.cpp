@@ -3,6 +3,7 @@
 #include <cmath>
 
 namespace blahdio {
+namespace read {
 namespace binary {
 
 MemoryReader::MemoryReader(int frame_size, const void* data, std::size_t data_size)
@@ -20,4 +21,4 @@ void MemoryReader::read_chunk(std::uint32_t num_frames, char* buffer)
 	std::copy(data_ + read_pos_, data_ + read_pos_ + read_size, buffer);
 }
 
-}}
+}}}

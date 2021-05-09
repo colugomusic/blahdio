@@ -3,6 +3,7 @@
 #include "binary_reader.h"
 
 namespace blahdio {
+namespace read {
 namespace binary {
 
 class MemoryReader : public Reader
@@ -17,4 +18,4 @@ public:
 	MemoryReader(int frame_size, const void* data, std::size_t data_size);
 };
 
-}}
+}}}

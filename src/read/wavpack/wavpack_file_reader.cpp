@@ -2,6 +2,7 @@
 #include <wavpack.h>
 
 namespace blahdio {
+namespace read {
 namespace wavpack {
 
 FileReader::FileReader(const std::string& utf8_path)
@@ -25,4 +26,4 @@ WavpackContext* FileReader::open()
 	return WavpackOpenFileInput(utf8_path_.c_str(), error, flags, 0);
 }
 
-}}
+}}}

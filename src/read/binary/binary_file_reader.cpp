@@ -3,6 +3,7 @@
 #include <utf8.h>
 
 namespace blahdio {
+namespace read {
 namespace binary {
 
 static std::unique_ptr<std::ifstream> open_file(const std::string& utf8_path)
@@ -33,4 +34,4 @@ void FileReader::read_chunk(std::uint32_t num_frames, char* buffer)
 	file_->read(buffer, size_t(num_frames) * frame_size_);
 }
 
-}}
+}}}

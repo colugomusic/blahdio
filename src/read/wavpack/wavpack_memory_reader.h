@@ -4,6 +4,7 @@
 #include <wavpack.h>
 
 namespace blahdio {
+namespace read {
 namespace wavpack {
 
 class MemoryReader : public Reader
@@ -26,4 +27,4 @@ public:
 	MemoryReader(const void* data, std::size_t data_size);
 };
 
-}}
+}}}

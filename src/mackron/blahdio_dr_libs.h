@@ -26,4 +26,5 @@ extern bool init_file(drwav* wav, const std::string& utf8_path);
 extern bool init_file_write(drwav* wav, const std::string& utf8_path, const drwav_data_format* format);
 }
 
-}}
+}
+}

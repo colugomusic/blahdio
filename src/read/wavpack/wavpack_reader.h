@@ -1,10 +1,12 @@
 #pragma once
 
-#include "generic_reader.h"
+#include "read/generic_reader.h"
+#include "read/typed_read_handler.h"
 
 struct WavpackContext;
 
 namespace blahdio {
+namespace read {
 namespace wavpack {
 
 class Reader : public GenericReader
@@ -22,4 +24,7 @@ public:
 	void read_frames(Callbacks callbacks, std::uint32_t chunk_size) override;
 };
 
-}}
+extern typed::Handler make_handler(const std::string& utf8_path);
+extern typed::Handler make_handler(const void* data, std::size_t data_size);
+
+}}}

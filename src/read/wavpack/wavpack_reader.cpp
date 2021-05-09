@@ -1,10 +1,13 @@
 #include "wavpack_reader.h"
+#include "wavpack_file_reader.h"
+#include "wavpack_memory_reader.h"
 #include <filesystem>
 #include <fstream>
 #include <vector>
 #include <wavpack.h>
 
 namespace blahdio {
+namespace read {
 namespace wavpack {
 
 Reader::~Reader()
@@ -57,7 +60,7 @@ bool Reader::try_read_header()
 		};
 	}
 
-    return true;
+	return true;
 }
 
 void Reader::read_frames(Callbacks callbacks, std::uint32_t chunk_size)
@@ -78,7 +81,7 @@ void Reader::read_frames(Callbacks callbacks, std::uint32_t chunk_size)
 
 		if (frame + read_size >= num_frames_)
 		{
-			read_size = num_frames_ - frame;
+			read_size = std::uint32_t(num_frames_ - frame);
 		}
 
 		interleaved_frames.resize(size_t(read_size) * num_channels_);
@@ -91,4 +94,58 @@ void Reader::read_frames(Callbacks callbacks, std::uint32_t chunk_size)
 	}
 }
 
-}}
+typed::Handler make_handler(const std::string& utf8_path)
+{
+	const auto try_read_header = [utf8_path](AudioDataFormat* format) -> bool
+	{
+		wavpack::FileReader reader(utf8_path);
+
+		if (!reader.try_read_header()) return false;
+
+		*format = reader.get_header_info();
+
+		return true;
+	};
+
+	const auto read_frames = [utf8_path](blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+	{
+		wavpack::FileReader reader(utf8_path);
+		wavpack::Reader::Callbacks reader_callbacks;
+
+		reader_callbacks.return_chunk = callbacks.return_chunk;
+		reader_callbacks.should_abort = callbacks.should_abort;
+
+		reader.read_frames(reader_callbacks, chunk_size);
+	};
+
+	return { AudioType::WavPack, try_read_header, read_frames };
+}
+
+typed::Handler make_handler(const void* data, std::size_t data_size)
+{
+	const auto try_read_header = [data, data_size](AudioDataFormat* format) -> bool
+	{
+		wavpack::MemoryReader reader(data, data_size);
+
+		if (!reader.try_read_header()) return false;
+
+		*format = reader.get_header_info();
+
+		return true;
+	};
+
+	const auto read_frames = [data, data_size](blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+	{
+		wavpack::MemoryReader reader(data, data_size);
+		wavpack::Reader::Callbacks reader_callbacks;
+
+		reader_callbacks.return_chunk = callbacks.return_chunk;
+		reader_callbacks.should_abort = callbacks.should_abort;
+
+		reader.read_frames(reader_callbacks, chunk_size);
+	};
+
+	return { AudioType::WavPack, try_read_header, read_frames };
+}
+
+}}}
