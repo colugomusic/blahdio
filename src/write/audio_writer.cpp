@@ -96,8 +96,6 @@ static void drwav_write_frames(drwav* wav, AudioWriter::Callbacks callbacks, con
 		}
 
 		frame += write_size;
-
-		if (callbacks.report_progress) callbacks.report_progress(frame);
 	}
 }
 
@@ -216,8 +214,6 @@ static void wavpack_write_file(WavpackBlockOutput blockout, void* id, const Audi
 		}
 
 		frame += write_size;
-
-		if (callbacks.report_progress) callbacks.report_progress(frame);
 	}
 
 	if (!WavpackFlushSamples(context))
