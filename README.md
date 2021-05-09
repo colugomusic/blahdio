@@ -54,7 +54,7 @@ reader_callbacks.return_chunk = [](std::uint64_t frame, const void* data, std::u
 {
   // The library calls this for each chunk of audio data it reads.
   
-  // The returned frame data will be interleaved.
+  // The channel data will be interleaved.
   
   // For typed audio data (WAV, MP3, FLAC and WavPack), frames will be returned
   // as 32-bit floats.
