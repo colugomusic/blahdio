@@ -4,7 +4,6 @@ project(blahdio)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
 
 include(CPM)
-CPMUsePackageLock(package-lock.cmake)
 
 # Header-only libraries #########################################
 CPMAddPackage(
@@ -29,9 +28,9 @@ CPMAddPackage(
 )
 
 list(APPEND include_dirs
-    ${dr_libs_SOURCE_DIR}
-    ${miniaudio_SOURCE_DIR}
-    ${utfcpp_SOURCE_DIR}/source
+	${dr_libs_SOURCE_DIR}
+	${miniaudio_SOURCE_DIR}
+	${utfcpp_SOURCE_DIR}/source
 )
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
@@ -47,10 +46,10 @@ list(APPEND link_libs wavpack)
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 list(APPEND PUBLIC_HEADERS
-    include/blahdio/audio_data_format.h
-    include/blahdio/audio_reader.h
-    include/blahdio/audio_writer.h
-    include/blahdio/audio_type.h
+	include/blahdio/audio_data_format.h
+	include/blahdio/audio_reader.h
+	include/blahdio/audio_writer.h
+	include/blahdio/audio_type.h
 )
 
 list(APPEND SRC
@@ -58,7 +57,7 @@ list(APPEND SRC
 	src/mackron/blahdio_dr_libs.cpp
 	src/mackron/blahdio_miniaudio.cpp
 	
-    src/read/audio_reader.cpp
+	src/read/audio_reader.cpp
 	src/read/generic_reader.h
 	src/read/typed_read_handler.h
 	src/read/typed_read_handler.cpp
@@ -90,13 +89,13 @@ list(APPEND SRC
 	src/read/wavpack/wavpack_stream_reader.h
 	src/read/wavpack/wavpack_stream_reader.cpp
 	
-    src/write/audio_writer.cpp
+	src/write/audio_writer.cpp
 	src/write/typed_write_handler.h
 
-    src/write/wav/wav_writer.h
+	src/write/wav/wav_writer.h
 	src/write/wav/wav_writer.cpp
 
-    src/write/wavpack/wavpack_writer.h
+	src/write/wavpack/wavpack_writer.h
 	src/write/wavpack/wavpack_writer.cpp
 )
 
@@ -108,20 +107,20 @@ source_group(TREE ${CMAKE_CURRENT_LIST_DIR}/src PREFIX "src" FILES ${SRC})
 add_library(${PROJECT_NAME} STATIC ${PUBLIC_HEADERS} ${SRC})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-    include
-    ${include_dirs}
+	include
+	${include_dirs}
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-    src
+	src
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    ${link_libs}
+	${link_libs}
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    CXX_STANDARD 17
+	CXX_STANDARD 17
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
