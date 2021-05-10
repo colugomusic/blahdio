@@ -4,6 +4,7 @@
 #include <dr_flac.h>
 #include <dr_mp3.h>
 #include <dr_wav.h>
+#include "blahdio/audio_reader.h"
 
 namespace blahdio {
 namespace dr_libs {
@@ -25,6 +26,13 @@ namespace wav {
 extern bool init_file(drwav* wav, const std::string& utf8_path);
 extern bool init_file_write(drwav* wav, const std::string& utf8_path, const drwav_data_format* format);
 }
+
+extern void generic_frame_reader_loop(
+	AudioReader::Callbacks callbacks,
+	std::function<bool(float*, std::uint32_t)> read_func,
+	std::uint32_t chunk_size,
+	int num_channels,
+	std::uint64_t num_frames);
 
 }
 }

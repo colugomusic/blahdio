@@ -23,6 +23,18 @@ Handlers make_handlers(const std::string& utf8_path)
 	return out;
 }
 
+Handlers make_handlers(const AudioReader::Stream& stream)
+{
+	Handlers out;
+
+	out.flac = read::flac::make_handler(stream);
+	out.mp3 = read::mp3::make_handler(stream);
+	out.wav = read::wav::make_handler(stream);
+	out.wavpack = read::wavpack::make_handler(stream);
+
+	return out;
+}
+
 Handlers make_handlers(const void* data, std::size_t data_size)
 {
 	Handlers out;

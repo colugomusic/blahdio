@@ -6,6 +6,7 @@
 #include "audio_type.h"
 
 namespace blahdio {
+
 namespace impl { class AudioReader; }
 
 class AudioReader
@@ -20,6 +21,17 @@ public:
 		ShouldAbortFunc should_abort;
 		ReturnChunkFunc return_chunk;
 	};
+
+	struct Stream
+	{
+		enum class SeekOrigin { Start, Current };
+
+		using SeekFunc = std::function<bool(SeekOrigin origin, std::int64_t offset)>;
+		using ReadBytesFunc = std::function<std::uint32_t(void* buffer, std::uint32_t bytes_to_read)>;
+
+		SeekFunc seek;
+		ReadBytesFunc read_bytes;
+	};
 	
 	// The reader will always read untyped binary data if type_hint == AudioType::Binary.
 	// Otherwise each audio type will be tried, starting with type_hint first.
@@ -29,6 +41,9 @@ public:
 
 	// Read from file
 	AudioReader(const std::string& utf8_path, AudioType type_hint = AudioType::None);
+
+	// Read from stream
+	AudioReader(const Stream& stream, AudioType type_hint = AudioType::None);
 
 	// Read from memory
 	AudioReader(const void* data, std::size_t data_size, AudioType type_hint = AudioType::None);

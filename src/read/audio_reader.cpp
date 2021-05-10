@@ -11,6 +11,7 @@ class AudioReader
 public:
 
 	AudioReader(const std::string& utf8_path, AudioType type_hint);
+	AudioReader(const blahdio::AudioReader::Stream& stream, AudioType type_hint);
 	AudioReader(const void* data, std::size_t data_size, AudioType type_hint);
 
 	void set_binary_frame_size(int frame_size);
@@ -33,6 +34,7 @@ private:
 	int binary_frame_size_ = 1;
 
 	void make_file_handlers(const std::string& utf8_path);
+	void make_stream_handlers(const blahdio::AudioReader::Stream& stream);
 	void make_memory_handlers(const void* data, std::size_t data_size);
 
 	void read_binary_header();
@@ -55,6 +57,24 @@ void AudioReader::make_file_handlers(const std::string& utf8_path)
 		default:
 		{
 			typed_handlers_ = read::typed::make_handlers(utf8_path);
+			break;
+		}
+	}
+}
+
+void AudioReader::make_stream_handlers(const blahdio::AudioReader::Stream& stream)
+{
+	switch (type_hint_)
+	{
+		case AudioType::Binary:
+		{
+			binary_handler_ = read::binary::make_handler(stream);
+			break;
+		}
+
+		default:
+		{
+			typed_handlers_ = read::typed::make_handlers(stream);
 			break;
 		}
 	}
@@ -123,6 +143,12 @@ AudioReader::AudioReader(const std::string& utf8_path, AudioType type_hint)
 	: type_hint_(type_hint)
 {
 	make_file_handlers(utf8_path);
+}
+
+AudioReader::AudioReader(const blahdio::AudioReader::Stream& stream, AudioType type_hint)
+	: type_hint_(type_hint)
+{
+	make_stream_handlers(stream);
 }
 
 AudioReader::AudioReader(const void* data, std::size_t data_size, AudioType type_hint)

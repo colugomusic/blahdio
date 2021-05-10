@@ -1,5 +1,6 @@
 #pragma once
 
+#include "blahdio/audio_reader.h"
 #include "read/typed_read_handler.h"
 
 namespace blahdio {
@@ -7,6 +8,7 @@ namespace read {
 namespace flac {
 
 extern typed::Handler make_handler(const std::string& utf8_path);
+extern typed::Handler make_handler(const AudioReader::Stream& stream);
 extern typed::Handler make_handler(const void* data, std::size_t data_size);
 
 }}}

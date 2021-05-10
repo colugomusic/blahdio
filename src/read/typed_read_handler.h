@@ -33,6 +33,7 @@ struct Handlers
 };
 
 extern Handlers make_handlers(const std::string& utf8_path);
+extern Handlers make_handlers(const AudioReader::Stream& stream);
 extern Handlers make_handlers(const void* data, std::size_t data_size);
 
 }}}

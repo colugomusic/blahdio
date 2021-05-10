@@ -7,14 +7,13 @@ namespace blahdio {
 namespace read {
 namespace wavpack {
 
-class MemoryReader : public Reader
+class StreamReader : public Reader
 {
 	WavpackContext* open() override;
 
 	struct Stream
 	{
-		const void* data;
-		std::size_t data_size;
+		AudioReader::Stream client_stream;
 		std::int64_t pos = 0;
 		unsigned char ungetc_char;
 		bool ungetc_flag = false;
@@ -26,7 +25,9 @@ class MemoryReader : public Reader
 
 public:
 
-	MemoryReader(const void* data, std::size_t data_size);
+	StreamReader(const AudioReader::Stream& stream);
 };
 
-}}}
+}
+}
+}

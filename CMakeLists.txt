@@ -41,7 +41,7 @@ set(WAVPACK_BUILD_WINAMP_PLUGIN OFF CACHE BOOL "Build WinAmp plugin" FORCE)
 set(WAVPACK_BUILD_PROGRAMS OFF CACHE BOOL "Build programs" FORCE)
 set(WAVPACK_BUILD_DOCS OFF CACHE BOOL "Build documentation" FORCE)
 set(BUILD_TESTING OFF CACHE BOOL "Build tests" FORCE)
-CPMAddPackage("gh:colugomusic/wavpack#master")
+CPMAddPackage("gh:dbry/wavpack#master")
 list(APPEND include_dirs ${wavpack_SOURCE_DIR}/include)
 list(APPEND link_libs wavpack)
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -56,12 +56,9 @@ list(APPEND PUBLIC_HEADERS
 list(APPEND SRC
 	src/mackron/blahdio_dr_libs.h
 	src/mackron/blahdio_dr_libs.cpp
-	src/mackron/blahdio_miniaudio.h
 	src/mackron/blahdio_miniaudio.cpp
 	
     src/read/audio_reader.cpp
-	src/read/generic_dr_libs_reader.h
-	src/read/generic_dr_libs_reader.cpp
 	src/read/generic_reader.h
 	src/read/typed_read_handler.h
 	src/read/typed_read_handler.cpp
@@ -72,6 +69,8 @@ list(APPEND SRC
 	src/read/binary/binary_memory_reader.cpp
 	src/read/binary/binary_reader.h
 	src/read/binary/binary_reader.cpp
+	src/read/binary/binary_stream_reader.h
+	src/read/binary/binary_stream_reader.cpp
 
 	src/read/flac/flac_reader.h
 	src/read/flac/flac_reader.cpp
@@ -88,8 +87,17 @@ list(APPEND SRC
 	src/read/wavpack/wavpack_memory_reader.cpp
 	src/read/wavpack/wavpack_reader.h
 	src/read/wavpack/wavpack_reader.cpp
+	src/read/wavpack/wavpack_stream_reader.h
+	src/read/wavpack/wavpack_stream_reader.cpp
 	
     src/write/audio_writer.cpp
+	src/write/typed_write_handler.h
+
+    src/write/wav/wav_writer.h
+	src/write/wav/wav_writer.cpp
+
+    src/write/wavpack/wavpack_writer.h
+	src/write/wavpack/wavpack_writer.cpp
 )
 
 # VS source groups ##############################################
@@ -118,4 +126,26 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
 	UTF_CPP_CPLUSPLUS=201703L
+	MA_NO_WASAPI
+	MA_NO_DSOUND
+	MA_NO_WINMM
+	MA_NO_ALSA
+	MA_NO_PULSEAUDIO
+	MA_NO_JACK
+	MA_NO_COREAUDIO
+	MA_NO_SNDIO
+	MA_NO_AUDIO4
+	MA_NO_OSS
+	MA_NO_AAUDIO
+	MA_NO_OPENSL
+	MA_NO_WEBAUDIO
+	MA_NO_NULL
+	MA_NO_DECODING
+	MA_NO_ENCODING
+	MA_NO_WAV
+	MA_NO_FLAC
+	MA_NO_MP3
+	MA_NO_DEVICE_IO
+	MA_NO_THREADING
+	MA_NO_GENERATION
 )

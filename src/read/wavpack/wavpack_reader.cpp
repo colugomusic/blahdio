@@ -1,5 +1,6 @@
 #include "wavpack_reader.h"
 #include "wavpack_file_reader.h"
+#include "wavpack_stream_reader.h"
 #include "wavpack_memory_reader.h"
 #include <filesystem>
 #include <fstream>
@@ -110,6 +111,33 @@ typed::Handler make_handler(const std::string& utf8_path)
 	const auto read_frames = [utf8_path](blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
 	{
 		wavpack::FileReader reader(utf8_path);
+		wavpack::Reader::Callbacks reader_callbacks;
+
+		reader_callbacks.return_chunk = callbacks.return_chunk;
+		reader_callbacks.should_abort = callbacks.should_abort;
+
+		reader.read_frames(reader_callbacks, chunk_size);
+	};
+
+	return { AudioType::WavPack, try_read_header, read_frames };
+}
+
+typed::Handler make_handler(const AudioReader::Stream& stream)
+{
+	const auto try_read_header = [stream](AudioDataFormat* format) -> bool
+	{
+		wavpack::StreamReader reader(stream);
+
+		if (!reader.try_read_header()) return false;
+
+		*format = reader.get_header_info();
+
+		return true;
+	};
+
+	const auto read_frames = [stream](blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+	{
+		wavpack::StreamReader reader(stream);
 		wavpack::Reader::Callbacks reader_callbacks;
 
 		reader_callbacks.return_chunk = callbacks.return_chunk;

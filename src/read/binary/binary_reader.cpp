@@ -1,5 +1,6 @@
 #include "binary_reader.h"
 #include "binary_file_reader.h"
+#include "binary_stream_reader.h"
 #include "binary_memory_reader.h"
 #include <vector>
 
@@ -32,7 +33,7 @@ void Reader::read_frames(Callbacks callbacks, std::uint32_t chunk_size)
 	}
 }
 
-auto make_handler(const std::string& utf8_path) -> Handler
+Handler make_handler(const std::string& utf8_path)
 {
 	const auto read_header = [utf8_path](int frame_size, AudioDataFormat* format)
 	{
@@ -55,7 +56,30 @@ auto make_handler(const std::string& utf8_path) -> Handler
 	return { read_header, read_frames };
 }
 
-auto make_handler(const void* data, std::size_t data_size) -> Handler
+Handler make_handler(const AudioReader::Stream& stream)
+{
+	const auto read_header = [stream](int frame_size, AudioDataFormat* format)
+	{
+		binary::StreamReader reader(stream, frame_size);
+
+		*format = reader.get_header_info();
+	};
+
+	const auto read_frames = [stream](blahdio::AudioReader::Callbacks callbacks, int frame_size, std::uint32_t chunk_size)
+	{
+		binary::StreamReader reader(stream, frame_size);
+		binary::StreamReader::Callbacks reader_callbacks;
+
+		reader_callbacks.return_chunk = callbacks.return_chunk;
+		reader_callbacks.should_abort = callbacks.should_abort;
+
+		reader.read_frames(reader_callbacks, chunk_size);
+	};
+
+	return { read_header, read_frames };
+}
+
+Handler make_handler(const void* data, std::size_t data_size)
 {
 	const auto read_header = [data, data_size](int frame_size, AudioDataFormat* format)
 	{

@@ -1,16 +1,14 @@
-#include "wavpack_memory_reader.h"
-#include <algorithm>
-#include <cstdio>
+#include "wavpack_stream_reader.h"
 
 namespace blahdio {
 namespace read {
 namespace wavpack {
 
-void MemoryReader::init_stream_reader()
+void StreamReader::init_stream_reader()
 {
 	stream_reader_.can_seek = [](void* id) -> int
 	{
-		return id != nullptr;
+		return 0;
 	};
 
 	stream_reader_.close = [](void* id) -> int
@@ -20,16 +18,12 @@ void MemoryReader::init_stream_reader()
 
 	stream_reader_.get_length = [](void* id) -> std::int64_t
 	{
-		const auto stream = (Stream*)(id);
-
-		return stream->data_size;
+		return 0;
 	};
 
 	stream_reader_.get_pos = [](void* id) -> std::int64_t
 	{
-		const auto stream = (Stream*)(id);
-
-		return stream->pos;
+		return 0;
 	};
 
 	stream_reader_.push_back_byte = [](void* id, int c) -> int
@@ -55,58 +49,17 @@ void MemoryReader::init_stream_reader()
 		}
 
 		if (bcount < 1) return 0;
-		
-		auto read_size = bcount;
 
-		if (std::size_t(stream->pos) + bcount > stream->data_size)
-		{
-			read_size = std::int32_t(stream->data_size - stream->pos);
-		}
-
-		const auto beg = ((const char*)(stream->data)) + stream->pos;
-		const auto end = beg + read_size;
-
-		std::copy(beg, end, (char*)(data));
-
-		stream->pos += read_size;
-
-		return read_size;
+		return std::int32_t(stream->client_stream.read_bytes(data, bcount));
 	};
 
 	stream_reader_.set_pos_abs = [](void* id, std::int64_t pos) -> int
 	{
-		const auto stream = (Stream*)(id);
-
-		stream->pos = pos;
-
 		return 0;
 	};
 
 	stream_reader_.set_pos_rel = [](void* id, std::int64_t delta, int mode) -> int
 	{
-		const auto stream = (Stream*)(id);
-
-		switch (mode)
-		{
-			case SEEK_SET:
-			{
-				stream->pos = delta;
-				break;
-			}
-
-			case SEEK_CUR:
-			{
-				stream->pos += delta;
-				break;
-			}
-
-			case SEEK_END:
-			{
-				stream->pos = stream->data_size + delta;
-				break;
-			}
-		}
-
 		return 0;
 	};
 
@@ -114,24 +67,26 @@ void MemoryReader::init_stream_reader()
 	stream_reader_.write_bytes = nullptr;
 }
 
-MemoryReader::MemoryReader(const void* data, std::size_t data_size)
+StreamReader::StreamReader(const AudioReader::Stream& stream)
 {
 	init_stream_reader();
 
-	stream_.data = data;
-	stream_.data_size = data_size;
+	stream_.client_stream = stream;
 }
 
-WavpackContext* MemoryReader::open()
+WavpackContext* StreamReader::open()
 {
 	int flags = 0;
 
 	flags |= OPEN_2CH_MAX;
 	flags |= OPEN_NORMALIZE;
+	flags |= OPEN_STREAMING;
 
 	char error[80];
 
 	return WavpackOpenFileInputEx64(&stream_reader_, &stream_, nullptr, error, flags, 0);
 }
 
-}}}
+}
+}
+}

@@ -7,6 +7,8 @@
 
 namespace blahdio {
 
+namespace impl { class AudioWriter; }
+
 class AudioWriter
 {
 public:
@@ -20,12 +22,12 @@ public:
 		GetNextChunkFunc get_next_chunk;
 	};
 
-	struct StreamWriter
+	struct Stream
 	{
 		enum class SeekOrigin { Start, Current };
 
 		using SeekFunc = std::function<bool(SeekOrigin, std::int64_t)>;
-		using WriteBytesFunc = std::function<std::uint64_t(const void*, std::uint64_t)>;
+		using WriteBytesFunc = std::function<std::uint32_t(const void*, std::uint32_t)>;
 
 		SeekFunc seek;
 		WriteBytesFunc write_bytes;
@@ -33,22 +35,19 @@ public:
 		operator bool() const { return seek && write_bytes; }
 	};
 
+	// Write to file
 	AudioWriter(const std::string& utf8_path, AudioType type, const AudioDataFormat& format);
-	AudioWriter(const StreamWriter& stream, AudioType type, const AudioDataFormat& format);
+
+	// Write to stream
+	AudioWriter(const Stream& stream, AudioType type, const AudioDataFormat& format);
+
+	~AudioWriter();
 
 	void write(Callbacks callbacks, std::uint32_t chunk_size);
 
-	struct TypeHandler
-	{
-		using WriteFunc = std::function<void(Callbacks, std::uint32_t)>;
-
-		WriteFunc write;
-	};
-
 private:
 
-
-	TypeHandler type_handler_;
+	impl::AudioWriter* impl_;
 };
 
 }
