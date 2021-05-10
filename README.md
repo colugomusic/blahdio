@@ -104,7 +104,7 @@ writer_callbacks.should_abort = []()
   return false;
 };
 
-writer_callbacks.get_next_chunk = [](float* buffer, snd::FrameCount frame, std::uint32_t num_frames)
+writer_callbacks.get_next_chunk = [](float* buffer, std::uint64_t frame, std::uint32_t num_frames)
 {
   // <frame> is the index of the first frame to be written, so if the chunk size
   //         is 512, this will be 0, 512, 1024, 1536 etc.
