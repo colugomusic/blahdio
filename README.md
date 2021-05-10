@@ -84,6 +84,8 @@ reader.read_frames(reader_callbacks, 512); // Will throw an exception if an erro
 ```c++
 #include <blahdio/audio_writer.h>
 
+...
+
 blahdio::AudioDataFormat write_format;
 
 write_format.bit_depth = 32;
