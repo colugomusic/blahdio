@@ -43,7 +43,7 @@ public:
 
 	~AudioWriter();
 
-	void write(Callbacks callbacks, std::uint32_t chunk_size);
+	void write_frames(Callbacks callbacks, std::uint32_t chunk_size);
 
 private:
 

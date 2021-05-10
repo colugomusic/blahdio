@@ -10,9 +10,9 @@ namespace typed {
 
 struct Handler
 {
-	using WriteFunc = std::function<void(AudioWriter::Callbacks, std::uint32_t)>;
+	using WriteFramesFunc = std::function<void(AudioWriter::Callbacks, std::uint32_t)>;
 
-	WriteFunc write;
+	WriteFramesFunc write_frames;
 };
 
 }}}

@@ -117,5 +117,5 @@ writer_callbacks.get_next_chunk = [](float* buffer, snd::FrameCount frame, std::
 };
 
 // Write file 512 frames at a time
-writer.write(writer_callbacks, 512);
+writer.write_frames(writer_callbacks, 512);
 ```

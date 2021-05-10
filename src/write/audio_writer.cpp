@@ -13,16 +13,16 @@ public:
 	AudioWriter(const std::string& utf8_path, AudioType type, const AudioDataFormat& format);
 	AudioWriter(const blahdio::AudioWriter::Stream& stream, AudioType type, const AudioDataFormat& format);
 
-	void write(blahdio::AudioWriter::Callbacks callbacks, std::uint32_t chunk_size);
+	void write_frames(blahdio::AudioWriter::Callbacks callbacks, std::uint32_t chunk_size);
 
 private:
 
 	write::typed::Handler typed_handler_;
 };
 
-void AudioWriter::write(blahdio::AudioWriter::Callbacks callbacks, std::uint32_t chunk_size)
+void AudioWriter::write_frames(blahdio::AudioWriter::Callbacks callbacks, std::uint32_t chunk_size)
 {
-	typed_handler_.write(callbacks, chunk_size);
+	typed_handler_.write_frames(callbacks, chunk_size);
 }
 
 static write::typed::Handler make_type_handler(const blahdio::AudioWriter::Stream& stream, AudioType type, const AudioDataFormat& format)
@@ -70,9 +70,9 @@ AudioWriter::~AudioWriter()
 	delete impl_;
 }
 
-void AudioWriter::write(Callbacks callbacks, std::uint32_t chunk_size)
+void AudioWriter::write_frames(Callbacks callbacks, std::uint32_t chunk_size)
 {
-	impl_->write(callbacks, chunk_size);
+	impl_->write_frames(callbacks, chunk_size);
 }
 
 
