@@ -27,6 +27,9 @@ public:
 		enum class SeekOrigin { Start, Current };
 
 		using SeekFunc = std::function<bool(SeekOrigin origin, std::int64_t offset)>;
+
+		// Returns the number of bytes written to the buffer
+		// Returning a value < bytes_to_read indicates the end of the stream.
 		using ReadBytesFunc = std::function<std::uint32_t(void* buffer, std::uint32_t bytes_to_read)>;
 
 		SeekFunc seek; // Not needed for WavPack reading
