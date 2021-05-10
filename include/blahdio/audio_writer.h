@@ -29,7 +29,7 @@ public:
 		using SeekFunc = std::function<bool(SeekOrigin, std::int64_t)>;
 		using WriteBytesFunc = std::function<std::uint32_t(const void*, std::uint32_t)>;
 
-		SeekFunc seek;
+		SeekFunc seek; // Not needed for WavPack writing
 		WriteBytesFunc write_bytes;
 
 		operator bool() const { return seek && write_bytes; }

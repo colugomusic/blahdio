@@ -29,7 +29,7 @@ public:
 		using SeekFunc = std::function<bool(SeekOrigin origin, std::int64_t offset)>;
 		using ReadBytesFunc = std::function<std::uint32_t(void* buffer, std::uint32_t bytes_to_read)>;
 
-		SeekFunc seek;
+		SeekFunc seek; // Not needed for WavPack reading
 		ReadBytesFunc read_bytes;
 	};
 	
