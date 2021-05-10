@@ -118,5 +118,6 @@ writer_callbacks.get_next_chunk = [](float* buffer, std::uint64_t frame, std::ui
 };
 
 // Write file 512 frames at a time
-writer.write(writer_callbacks, 512);
+writer.write(writer_callbacks, 512); // Will throw an exception if an error
+                                     // occurs during writing
 ```
