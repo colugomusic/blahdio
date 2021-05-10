@@ -7,16 +7,17 @@ This is an audio file reader/writer library which supports the following file ty
 - MP3
 - FLAC
 - WavPack
-- Untyped data
+- Raw untyped bytes
 
 #### Writing
 - WAV
 - WavPack
 
-You can read and write to and from files or memory locations using the same interface.
+You can read and write to and from files, streams or memory locations.
 The read/write loops are implemented by the library. The user supplies their own callbacks to handle each chunk of frame data.
 
 Blahdio is implemented using these libraries:
+- https://github.com/mackron/dr_libs
 - https://github.com/mackron/miniaudio
 - https://github.com/dbry/WavPack
 - https://github.com/nemtrif/utfcpp
@@ -83,6 +84,8 @@ reader.read_frames(reader_callbacks, 512); // Will throw an exception if an erro
 ```c++
 #include <blahdio/audio_writer.h>
 
+...
+
 blahdio::AudioDataFormat write_format;
 
 write_format.bit_depth = 32;
@@ -103,7 +106,7 @@ writer_callbacks.should_abort = []()
   return false;
 };
 
-writer_callbacks.get_next_chunk = [](float* buffer, snd::FrameCount frame, std::uint32_t num_frames)
+writer_callbacks.get_next_chunk = [](float* buffer, std::uint64_t frame, std::uint32_t num_frames)
 {
   // <frame> is the index of the first frame to be written, so if the chunk size
   //         is 512, this will be 0, 512, 1024, 1536 etc.
@@ -117,5 +120,6 @@ writer_callbacks.get_next_chunk = [](float* buffer, snd::FrameCount frame, std::
 };
 
 // Write file 512 frames at a time
-writer.write_frames(writer_callbacks, 512);
+writer.write_frames(writer_callbacks, 512); // Will throw an exception if an error
+                                            // occurs during writing
 ```
