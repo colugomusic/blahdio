@@ -2,6 +2,7 @@
 #include "mackron/blahdio_dr_libs.h"
 #include <miniaudio.h>
 #include <stdexcept>
+#include <vector>
 
 namespace blahdio {
 namespace write {

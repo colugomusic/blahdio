@@ -1,5 +1,6 @@
 #include "wavpack_writer.h"
 #include <fstream>
+#include <vector>
 #include <utf8.h>
 #include <wavpack.h>
 
