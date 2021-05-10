@@ -86,7 +86,7 @@ void generic_frame_reader_loop(
 
 		if (!read_func(interleaved_frames.data(), read_size)) throw std::runtime_error("Read error");
 
-		callbacks.return_chunk(frame, (const void*)(interleaved_frames.data()), read_size);
+		callbacks.return_chunk((const void*)(interleaved_frames.data()), frame, read_size);
 
 		frame += read_size;
 	}

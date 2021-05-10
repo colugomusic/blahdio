@@ -27,7 +27,7 @@ void Reader::read_frames(Callbacks callbacks, std::uint32_t chunk_size)
 
 		read_chunk(frames_to_read, frame_data.data());
 
-		callbacks.return_chunk(frame, (const void*)(frame_data.data()), frames_to_read);
+		callbacks.return_chunk((const void*)(frame_data.data()), frame, frames_to_read);
 
 		frame += frames_to_read;
 	}

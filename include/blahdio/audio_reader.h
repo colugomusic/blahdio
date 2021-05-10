@@ -16,7 +16,7 @@ public:
 	struct Callbacks
 	{
 		using ShouldAbortFunc = std::function<bool()>;
-		using ReturnChunkFunc = std::function<void(std::uint64_t first_frame_index, const void* data, std::uint32_t num_frames)>;
+		using ReturnChunkFunc = std::function<void(const void* data, std::uint64_t first_frame_index, std::uint32_t num_frames)>;
 
 		ShouldAbortFunc should_abort;
 		ReturnChunkFunc return_chunk;
