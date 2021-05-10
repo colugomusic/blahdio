@@ -13,7 +13,7 @@ StreamReader::StreamReader(const AudioReader::Stream& stream, int frame_size)
 
 void StreamReader::read_chunk(std::uint32_t num_frames, char* buffer)
 {
-	const auto read_size = std::uint64_t(num_frames) * frame_size_;
+	const auto read_size = num_frames * frame_size_;
 	const auto frames_read = stream_.read_bytes(buffer, read_size);
 
 	num_frames_ += frames_read;
