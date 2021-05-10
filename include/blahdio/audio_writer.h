@@ -31,8 +31,6 @@ public:
 
 		SeekFunc seek; // Not needed for WavPack writing
 		WriteBytesFunc write_bytes;
-
-		operator bool() const { return seek && write_bytes; }
 	};
 
 	// Write to file
