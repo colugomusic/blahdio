@@ -62,7 +62,7 @@ bool init_file_write(drwav* wav, const std::string& utf8_path, const drwav_data_
 
 void generic_frame_reader_loop(
 	AudioReader::Callbacks callbacks,
-	std::function<bool(float*, std::uint32_t)> read_func,
+	std::function<std::uint32_t(float*, std::uint32_t)> read_func,
 	std::uint32_t chunk_size,
 	int num_channels,
 	std::uint64_t num_frames)
@@ -84,11 +84,39 @@ void generic_frame_reader_loop(
 
 		interleaved_frames.resize(size_t(read_size) * num_channels);
 
-		if (!read_func(interleaved_frames.data(), read_size)) throw std::runtime_error("Read error");
+		const auto frames_read = read_func(interleaved_frames.data(), read_size);
+		
+		callbacks.return_chunk((const void*)(interleaved_frames.data()), frame, frames_read);
 
-		callbacks.return_chunk((const void*)(interleaved_frames.data()), frame, read_size);
+		if (frames_read < read_size) throw std::runtime_error("Read error");
 
-		frame += read_size;
+		frame += frames_read;
+	}
+}
+
+void generic_stream_reader_loop(
+	AudioReader::Callbacks callbacks,
+	std::function<std::uint32_t(float*, std::uint32_t)> read_func,
+	std::uint32_t chunk_size,
+	int num_channels)
+{
+	std::uint64_t frame = 0;
+
+	for (;;)
+	{
+		if (callbacks.should_abort()) break;
+
+		std::vector<float> interleaved_frames;
+
+		interleaved_frames.resize(size_t(chunk_size) * num_channels);
+
+		const auto frames_read = read_func(interleaved_frames.data(), chunk_size);
+
+		callbacks.return_chunk((const void*)(interleaved_frames.data()), frame, frames_read);
+
+		if (frames_read < chunk_size) break;
+
+		frame += frames_read;
 	}
 }
 

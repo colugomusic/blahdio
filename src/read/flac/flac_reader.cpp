@@ -23,10 +23,20 @@ static void read_frame_data(drflac* flac, AudioReader::Callbacks callbacks, cons
 {
 	const auto read_func = [flac](float* buffer, std::uint32_t read_size)
 	{
-		return drflac_read_pcm_frames_f32(flac, read_size, buffer) == read_size;
+		return std::uint32_t(drflac_read_pcm_frames_f32(flac, read_size, buffer));
 	};
 
 	dr_libs::generic_frame_reader_loop(callbacks, read_func, chunk_size, format.num_channels, format.num_frames);
+}
+
+static void read_stream_data(drflac* flac, AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+{
+	const auto read_func = [flac](float* buffer, std::uint32_t read_size)
+	{
+		return std::uint32_t(drflac_read_pcm_frames_f32(flac, read_size, buffer));
+	};
+
+	dr_libs::generic_stream_reader_loop(callbacks, read_func, chunk_size, format.num_channels);
 }
 
 static AudioReader::Stream::SeekOrigin convert(drflac_seek_origin drflac_origin)
@@ -104,7 +114,7 @@ typed::Handler make_handler(const AudioReader::Stream& stream)
 
 		if (!flac) throw std::runtime_error("Read error");
 
-		read_frame_data(flac, callbacks, format, chunk_size);
+		read_stream_data(flac, callbacks, format, chunk_size);
 
 		drflac_close(flac);
 	};

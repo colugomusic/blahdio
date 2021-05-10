@@ -87,6 +87,28 @@ WavpackContext* StreamReader::open()
 	return WavpackOpenFileInputEx64(&stream_reader_, &stream_, nullptr, error, flags, 0);
 }
 
+void StreamReader::do_read_frames(Callbacks callbacks, std::uint32_t chunk_size, std::function<std::uint32_t(float* buffer, std::uint32_t read_size)> chunk_reader)
+{
+	std::uint64_t frame = 0;
+
+	for (;;)
+	{
+		if (callbacks.should_abort()) break;
+
+		std::vector<float> interleaved_frames;
+
+		interleaved_frames.resize(size_t(chunk_size) * num_channels_);
+
+		const auto frames_read = chunk_reader(interleaved_frames.data(), chunk_size);
+
+		callbacks.return_chunk((const void*)(interleaved_frames.data()), frame, chunk_size);
+
+		if (frames_read < chunk_size) break;
+
+		frame += chunk_size;
+	}
+}
+
 }
 }
 }

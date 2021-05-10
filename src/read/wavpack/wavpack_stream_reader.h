@@ -23,6 +23,8 @@ class StreamReader : public Reader
 
 	void init_stream_reader();
 
+	void do_read_frames(Callbacks callbacks, std::uint32_t chunk_size, std::function<std::uint32_t(float* buffer, std::uint32_t read_size)> chunk_reader) override;
+
 public:
 
 	StreamReader(const AudioReader::Stream& stream);

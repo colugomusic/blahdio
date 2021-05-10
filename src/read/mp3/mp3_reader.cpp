@@ -23,10 +23,20 @@ static void read_frame_data(drmp3* mp3, AudioReader::Callbacks callbacks, const 
 {
 	const auto read_func = [mp3](float* buffer, std::uint32_t read_size)
 	{
-		return drmp3_read_pcm_frames_f32(mp3, read_size, buffer) == read_size;
+		return std::uint32_t(drmp3_read_pcm_frames_f32(mp3, read_size, buffer));
 	};
 
 	dr_libs::generic_frame_reader_loop(callbacks, read_func, chunk_size, format.num_channels, format.num_frames);
+}
+
+static void read_stream_data(drmp3* mp3, AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+{
+	const auto read_func = [mp3](float* buffer, std::uint32_t read_size)
+	{
+		return std::uint32_t(drmp3_read_pcm_frames_f32(mp3, read_size, buffer));
+	};
+
+	dr_libs::generic_stream_reader_loop(callbacks, read_func, chunk_size, format.num_channels);
 }
 
 static AudioReader::Stream::SeekOrigin convert(drmp3_seek_origin drmp3_origin)
@@ -110,7 +120,7 @@ typed::Handler make_handler(const AudioReader::Stream& stream)
 			throw std::runtime_error("Read error");
 		}
 
-		read_frame_data(&mp3, callbacks, format, chunk_size);
+		read_stream_data(&mp3, callbacks, format, chunk_size);
 
 		drmp3_uninit(&mp3);
 	};

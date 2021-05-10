@@ -12,16 +12,18 @@ namespace wavpack {
 class Reader : public GenericReader
 {
 	WavpackContext* context_ = nullptr;
-	std::function<bool(float* buffer, std::uint32_t read_size)> chunk_reader_;
+	std::function<std::uint32_t(float* buffer, std::uint32_t read_size)> chunk_reader_;
 
 	virtual WavpackContext* open() = 0;
+
+	virtual void do_read_frames(Callbacks callbacks, std::uint32_t chunk_size, std::function<std::uint32_t(float* buffer, std::uint32_t read_size)> chunk_reader);
 
 public:
 
 	~Reader();
 
 	bool try_read_header();
-	void read_frames(Callbacks callbacks, std::uint32_t chunk_size) override;
+	virtual void read_frames(Callbacks callbacks, std::uint32_t chunk_size) override;
 };
 
 extern typed::Handler make_handler(const std::string& utf8_path);

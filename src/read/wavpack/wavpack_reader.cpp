@@ -50,14 +50,14 @@ bool Reader::try_read_header()
 
 			const auto frames_read = WavpackUnpackSamples(context_, frames.data(), read_size);
 
-			if (frames_read != read_size) return false;
+			if (frames_read < read_size) return frames_read;
 
 			for (std::uint32_t i = 0; i < read_size * num_channels_; i++)
 			{
 				buffer[i] = float(frames[i]) / divisor;
 			}
 
-			return true;
+			return frames_read;
 		};
 	}
 
@@ -70,6 +70,11 @@ void Reader::read_frames(Callbacks callbacks, std::uint32_t chunk_size)
 
 	if (!context_) throw std::runtime_error("Read error");
 
+	do_read_frames(callbacks, chunk_size, chunk_reader_);
+}
+
+void Reader::do_read_frames(Callbacks callbacks, std::uint32_t chunk_size, std::function<std::uint32_t(float* buffer, std::uint32_t read_size)> chunk_reader)
+{
 	std::uint64_t frame = 0;
 
 	while (frame < num_frames_)
@@ -87,11 +92,13 @@ void Reader::read_frames(Callbacks callbacks, std::uint32_t chunk_size)
 
 		interleaved_frames.resize(size_t(read_size) * num_channels_);
 
-		if (!chunk_reader_(interleaved_frames.data(), read_size)) throw std::runtime_error("Read error");
+		const auto frames_read = chunk_reader(interleaved_frames.data(), read_size);
+		
+		callbacks.return_chunk((const void*)(interleaved_frames.data()), frame, frames_read);
 
-		callbacks.return_chunk((const void*)(interleaved_frames.data()), frame, read_size);
+		if (frames_read < read_size) throw std::runtime_error("Read error");
 
-		frame += read_size;
+		frame += frames_read;
 	}
 }
 

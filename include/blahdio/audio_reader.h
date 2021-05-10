@@ -58,6 +58,8 @@ public:
 
 	int get_frame_size() const;
 	int get_num_channels() const;
+
+	// May return zero if source is a stream
 	std::uint64_t get_num_frames() const;
 
 	// These will always return zero when reading AudioType::Binary data
