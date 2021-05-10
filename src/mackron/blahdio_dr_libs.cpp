@@ -1,4 +1,5 @@
 #include "blahdio_dr_libs.h"
+#include <vector>
 #include <utf8.h>
 
 #define DR_FLAC_IMPLEMENTATION
