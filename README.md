@@ -7,16 +7,17 @@ This is an audio file reader/writer library which supports the following file ty
 - MP3
 - FLAC
 - WavPack
-- Untyped data
+- Raw untyped bytes
 
 #### Writing
 - WAV
 - WavPack
 
-You can read and write to and from files or memory locations using the same interface.
+You can read and write to and from files, streams or memory locations.
 The read/write loops are implemented by the library. The user supplies their own callbacks to handle each chunk of frame data.
 
 Blahdio is implemented using these libraries:
+- https://github.com/mackron/dr_libs
 - https://github.com/mackron/miniaudio
 - https://github.com/dbry/WavPack
 - https://github.com/nemtrif/utfcpp
