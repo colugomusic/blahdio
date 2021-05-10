@@ -159,6 +159,25 @@ typed::Handler make_handler(const void* data, std::size_t data_size)
 	return { AudioType::WAV, try_read_header, read_frames };
 }
 
+std::vector<typed::Handler> make_attempt_order(const typed::Handlers& handlers)
+{
+	std::vector<typed::Handler> out;
+
+	out.push_back(handlers.wav);
+
+#	if BLAHDIO_ENABLE_MP3
+	out.push_back(handlers.mp3);
+#	endif
+
+#	if BLAHDIO_ENABLE_FLAC
+	out.push_back(handlers.flac);
+#	endif
+
+#	if BLAHDIO_ENABLE_WAVPACK
+	out.push_back(handlers.wavpack);
+#	endif
+
+	return out;
 }
-}
-}
+
+}}}

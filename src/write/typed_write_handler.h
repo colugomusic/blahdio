@@ -1,7 +1,5 @@
 #pragma once
 
-#include <array>
-
 #include "blahdio/audio_writer.h"
 
 namespace blahdio {
@@ -14,5 +12,8 @@ struct Handler
 
 	WriteFramesFunc write_frames;
 };
+
+extern Handler make_handler(const AudioWriter::Stream& stream, AudioType type, const AudioDataFormat& format);
+extern Handler make_handler(const std::string& utf8_path, AudioType type, const AudioDataFormat& format);
 
 }}}

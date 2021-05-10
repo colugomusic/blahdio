@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.18)
 project(blahdio)
 
+option(BLAHDIO_ENABLE_FLAC "Enable FLAC support" ON)
+option(BLAHDIO_ENABLE_MP3 "Enable MP3 support" ON)
+option(BLAHDIO_ENABLE_WAV "Enable WAV support" ON)
+option(BLAHDIO_ENABLE_WAVPACK "Enable WavPack support" ON)
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
 
 include(CPM)
@@ -53,10 +58,6 @@ list(APPEND PUBLIC_HEADERS
 )
 
 list(APPEND SRC
-	src/mackron/blahdio_dr_libs.h
-	src/mackron/blahdio_dr_libs.cpp
-	src/mackron/blahdio_miniaudio.cpp
-	
 	src/read/audio_reader.cpp
 	src/read/generic_reader.h
 	src/read/typed_read_handler.h
@@ -70,34 +71,57 @@ list(APPEND SRC
 	src/read/binary/binary_reader.cpp
 	src/read/binary/binary_stream_reader.h
 	src/read/binary/binary_stream_reader.cpp
-
-	src/read/flac/flac_reader.h
-	src/read/flac/flac_reader.cpp
-
-	src/read/mp3/mp3_reader.h
-	src/read/mp3/mp3_reader.cpp
-
-	src/read/wav/wav_reader.h
-	src/read/wav/wav_reader.cpp
-
-	src/read/wavpack/wavpack_file_reader.h
-	src/read/wavpack/wavpack_file_reader.cpp
-	src/read/wavpack/wavpack_memory_reader.h
-	src/read/wavpack/wavpack_memory_reader.cpp
-	src/read/wavpack/wavpack_reader.h
-	src/read/wavpack/wavpack_reader.cpp
-	src/read/wavpack/wavpack_stream_reader.h
-	src/read/wavpack/wavpack_stream_reader.cpp
 	
 	src/write/audio_writer.cpp
 	src/write/typed_write_handler.h
-
-	src/write/wav/wav_writer.h
-	src/write/wav/wav_writer.cpp
-
-	src/write/wavpack/wavpack_writer.h
-	src/write/wavpack/wavpack_writer.cpp
+	src/write/typed_write_handler.cpp
 )
+
+if (BLAHDIO_ENABLE_FLAC)
+	list(APPEND SRC
+		src/read/flac/flac_reader.h
+		src/read/flac/flac_reader.cpp
+	)
+endif()
+
+if (BLAHDIO_ENABLE_MP3)
+	list(APPEND SRC
+		src/read/mp3/mp3_reader.h
+		src/read/mp3/mp3_reader.cpp
+	)
+endif()
+
+if (BLAHDIO_ENABLE_WAV)
+	list(APPEND SRC
+		src/read/wav/wav_reader.h
+		src/read/wav/wav_reader.cpp
+		src/write/wav/wav_writer.h
+		src/write/wav/wav_writer.cpp
+	)
+endif()
+
+if (BLAHDIO_ENABLE_WAVPACK)
+	list(APPEND SRC
+		src/read/wavpack/wavpack_file_reader.h
+		src/read/wavpack/wavpack_file_reader.cpp
+		src/read/wavpack/wavpack_memory_reader.h
+		src/read/wavpack/wavpack_memory_reader.cpp
+		src/read/wavpack/wavpack_reader.h
+		src/read/wavpack/wavpack_reader.cpp
+		src/read/wavpack/wavpack_stream_reader.h
+		src/read/wavpack/wavpack_stream_reader.cpp
+		src/write/wavpack/wavpack_writer.h
+		src/write/wavpack/wavpack_writer.cpp
+	)
+endif()
+
+if (BLAHDIO_ENABLE_FLAC OR BLAHDIO_ENABLE_MP3 OR BLAHDIO_ENABLE_WAV)
+	list(APPEND SRC
+		src/mackron/blahdio_dr_libs.h
+		src/mackron/blahdio_dr_libs.cpp
+		src/mackron/blahdio_miniaudio.cpp
+	)
+endif()
 
 # VS source groups ##############################################
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR}/include/blahdio PREFIX "public headers" FILES ${PUBLIC_HEADERS})
@@ -147,4 +171,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 	MA_NO_DEVICE_IO
 	MA_NO_THREADING
 	MA_NO_GENERATION
+	$<$<BOOL:${BLAHDIO_ENABLE_FLAC}>:BLAHDIO_ENABLE_FLAC>
+	$<$<BOOL:${BLAHDIO_ENABLE_MP3}>:BLAHDIO_ENABLE_MP3>
+	$<$<BOOL:${BLAHDIO_ENABLE_WAV}>:BLAHDIO_ENABLE_WAV>
+	$<$<BOOL:${BLAHDIO_ENABLE_WAVPACK}>:BLAHDIO_ENABLE_WAVPACK>
 )

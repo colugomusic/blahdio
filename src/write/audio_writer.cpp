@@ -1,6 +1,5 @@
 #include "blahdio/audio_writer.h"
-#include "write/wav/wav_writer.h"
-#include "write/wavpack/wavpack_writer.h"
+#include "typed_write_handler.h"
 
 namespace blahdio {
 
@@ -25,31 +24,13 @@ void AudioWriter::write_frames(blahdio::AudioWriter::Callbacks callbacks, std::u
 	typed_handler_.write_frames(callbacks, chunk_size);
 }
 
-static write::typed::Handler make_type_handler(const blahdio::AudioWriter::Stream& stream, AudioType type, const AudioDataFormat& format)
-{
-	switch (type)
-	{
-		case AudioType::WavPack: return write::wavpack::make_handler(stream, format);
-		case AudioType::WAV: default: return write::wav::make_handler(stream, format);
-	}
-}
-
-static write::typed::Handler make_type_handler(const std::string& utf8_path, AudioType type, const AudioDataFormat& format)
-{
-	switch (type)
-	{
-		case AudioType::WavPack: return write::wavpack::make_handler(utf8_path, format);
-		case AudioType::WAV: default: return write::wav::make_handler(utf8_path, format);
-	}
-}
-
 AudioWriter::AudioWriter(const std::string& utf8_path, AudioType type, const AudioDataFormat& format)
-	: typed_handler_(make_type_handler(utf8_path, type, format))
+	: typed_handler_(write::typed::make_handler(utf8_path, type, format))
 {
 }
 
 AudioWriter::AudioWriter(const blahdio::AudioWriter::Stream& stream, AudioType type, const AudioDataFormat& format)
-	: typed_handler_(make_type_handler(stream, type, format))
+	: typed_handler_(write::typed::make_handler(stream, type, format))
 {
 }
 

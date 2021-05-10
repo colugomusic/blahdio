@@ -75,6 +75,15 @@ static void wavpack_write_file(WavpackBlockOutput blockout, void* id, const Audi
 	WavpackCloseFile(context);
 }
 
+static void open_file(std::ofstream* file, const std::string& utf8_path)
+{
+#ifdef _WIN32
+	file->open((const wchar_t*)(utf8::utf8to16(utf8_path).c_str()), std::fstream::binary);
+#else
+	file->open(utf8_path, std::fstream::binary);
+#endif
+}
+
 typed::Handler make_handler(const std::string& utf8_path, const AudioDataFormat& format)
 {
 	const auto write_func = [utf8_path, format](AudioWriter::Callbacks callbacks, std::uint32_t chunk_size)
@@ -92,11 +101,7 @@ typed::Handler make_handler(const std::string& utf8_path, const AudioDataFormat&
 
 		std::ofstream file;
 
-#ifdef _WIN32
-		file.open((const wchar_t*)(utf8::utf8to16(utf8_path).c_str()), std::fstream::binary);
-#else
-		file.open(utf8_path, std::fstream::binary);
-#endif
+		open_file(&file, utf8_path);
 
 		wavpack_write_file(blockout, &file, format, callbacks, chunk_size);
 	};

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <array>
+#include <vector>
 
 #include "blahdio/audio_data_format.h"
 #include "blahdio/audio_reader.h"
@@ -24,12 +24,23 @@ struct Handler
 
 struct Handlers
 {
-	Handler flac;
-	Handler mp3;
-	Handler wav;
-	Handler wavpack;
+#	if BLAHDIO_ENABLE_FLAC
+		Handler flac;
+#	endif
 
-	std::array<read::typed::Handler, 4> make_type_attempt_order(AudioType type) const;
+#	if BLAHDIO_ENABLE_MP3
+		Handler mp3;
+#	endif
+
+#	if BLAHDIO_ENABLE_WAV
+		Handler wav;
+#	endif
+
+#	if BLAHDIO_ENABLE_WAVPACK
+		Handler wavpack;
+#	endif
+
+	std::vector<read::typed::Handler> make_type_attempt_order(AudioType type) const;
 };
 
 extern Handlers make_handlers(const std::string& utf8_path);
