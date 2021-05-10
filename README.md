@@ -54,7 +54,7 @@ reader_callbacks.should_abort = []()
   return false;
 };
 
-reader_callbacks.return_chunk = [](std::uint64_t frame, const void* data, std::uint32_t size)
+reader_callbacks.return_chunk = [](const void* data, std::uint64_t frame, std::uint32_t num_frames)
 {
   // The library calls this for each chunk of audio data it reads.
   
@@ -63,17 +63,59 @@ reader_callbacks.return_chunk = [](std::uint64_t frame, const void* data, std::u
   // For typed audio data (WAV, MP3, FLAC and WavPack),
   // frames will be returned as floats.
   
-  // <frame> is the index of the first frame in the chunk, so if the chunk size
-  //         is 512, this will be 0, 512, 1024, 1536 etc.
-  
   // <data> points to the frame data. For typed audio data this will be
   //        (<size> * (number of channels) * sizeof(float)) bytes of data
   
-  // <size> is the number of frames pointed to by <data>. This may be less than
-  //        the chunk size if this is the final chunk.
+  // <frame> is the index of the first frame in the chunk, so if the chunk size
+  //         is 512, this will be 0, 512, 1024, 1536 etc.
+  
+  // <num_frames> is the number of frames pointed to by <data>. This may be less than
+  //              the chunk size if this is the final chunk.
 };
 
 // Read file 512 frames at a time
 reader.read_frames(reader_callbacks, 512); // Will throw an exception if an error
                                            // occurs during reading
+```
+
+### Writing audio data to a file
+
+```c++
+#include <blahdio/audio_writer.h>
+
+blahdio::AudioDataFormat write_format;
+
+write_format.bit_depth = 32;
+write_format.num_channels = 2;
+write_format.num_frames = num_frames;
+write_format.sample_rate = 44100;
+
+blahdio::AudioWriter writer("file_path.wav", blahdio::AudioType::WAV, write_format);
+
+blahdio::AudioWriter::Callbacks writer_callbacks;
+
+writer_callbacks.should_abort = []()
+{
+  // This callback will be entered before each
+  // chunk of frame data is written.
+  
+  // Return true to stop writing.
+  return false;
+};
+
+writer_callbacks.get_next_chunk = [](float* buffer, snd::FrameCount frame, std::uint32_t num_frames)
+{
+  // <frame> is the index of the first frame to be written, so if the chunk size
+  //         is 512, this will be 0, 512, 1024, 1536 etc.
+  
+  // <buffer> points to a buffer of
+  //          (<chunk_size> * (number of channels) * sizeof(float)) bytes
+  
+  // <num_frames> is the number of frames that should be written to <buffer>
+  
+  // Written channel data should be interleaved
+};
+
+// Write file 512 frames at a time
+writer.write(writer_callbacks, 512);
 ```
