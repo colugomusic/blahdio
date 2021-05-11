@@ -1,4 +1,5 @@
 #include "binary_stream_reader.h"
+#include <vector>
 
 namespace blahdio {
 namespace read {
