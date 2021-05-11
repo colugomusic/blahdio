@@ -129,12 +129,12 @@ std::vector<read::typed::Handler> Handlers::make_type_attempt_order(AudioType ty
 			case AudioType::MP3: return read::mp3::make_attempt_order(*this);
 #		endif
 
-#		if BLAHDIO_ENABLE_WAVPACK
-			case AudioType::FLAC: return read::wavpack::make_attempt_order(*this);
-#		endif
-
 #		if BLAHDIO_ENABLE_WAV
 			case AudioType::WAV: return read::wav::make_attempt_order(*this);
+#		endif
+
+#		if BLAHDIO_ENABLE_WAVPACK
+			case AudioType::WavPack: return read::wavpack::make_attempt_order(*this);
 #		endif
 
 		default: return make_default_attempt_order(*this);
