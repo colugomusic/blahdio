@@ -60,12 +60,13 @@ reader_callbacks.return_chunk = [](const void* data, std::uint64_t frame, std::u
   // The library calls this for each chunk of audio data it reads.
   
   // The channel data will be interleaved.
+  // A frame consists of one value for each channel.
   
   // For typed audio data (WAV, MP3, FLAC and WavPack),
   // frames will be returned as floats.
   
   // <data> points to the frame data. For typed audio data this will be
-  //        (<size> * (number of channels) * sizeof(float)) bytes of data
+  //        (<num_frames> * (number of channels) * sizeof(float)) bytes of data
   
   // <frame> is the index of the first frame in the chunk, so if the chunk size
   //         is 512, this will be 0, 512, 1024, 1536 etc.
@@ -112,7 +113,7 @@ writer_callbacks.get_next_chunk = [](float* buffer, std::uint64_t frame, std::ui
   //         is 512, this will be 0, 512, 1024, 1536 etc.
   
   // <buffer> points to a buffer of
-  //          (<chunk_size> * (number of channels) * sizeof(float)) bytes
+  //          (<num_frames> * (number of channels) * sizeof(float)) bytes
   
   // <num_frames> is the number of frames that should be written to <buffer>
   
