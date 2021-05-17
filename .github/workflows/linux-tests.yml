@@ -1,0 +1,21 @@
+name: Linux tests
+on: [push]
+jobs:
+  Build-Linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Restore CPM sources cache
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-cpm-sources
+        with:
+          path: "cpm_source_cache"
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+      - name: Configure
+        run: cmake . -DCPM_SOURCE_CACHE=cpm_source_cache -DBLAHDIO_BUILD_TESTS=ON
+      - name: Build
+        run: cmake --build . --config Release
+      - name: Run tests
+        run: ctest -C Release
