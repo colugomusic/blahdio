@@ -18,4 +18,4 @@ jobs:
       - name: Build
         run: cmake --build . --config Release
       - name: Run tests
-        run: ctest -C Release
+        run: ctest --output-on-failure -C Release
