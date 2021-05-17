@@ -56,7 +56,7 @@ static void wavpack_write_file(WavpackBlockOutput blockout, void* id, const Audi
 
 		for (int i = 0; i < samples.size(); i++)
 		{
-			samples[i] = std::int32_t(interleaved_frames[i] * scale);
+			samples[i] = std::int32_t(double(interleaved_frames[i]) * scale);
 		}
 
 		if (!WavpackPackSamples(context, samples.data(), write_size))
