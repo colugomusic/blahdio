@@ -5,12 +5,14 @@ option(BLAHDIO_ENABLE_FLAC "Enable FLAC support" ON)
 option(BLAHDIO_ENABLE_MP3 "Enable MP3 support" ON)
 option(BLAHDIO_ENABLE_WAV "Enable WAV support" ON)
 option(BLAHDIO_ENABLE_WAVPACK "Enable WavPack support" ON)
+option(BLAHDIO_BUILD_TESTS "Build tests" OFF)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
 
 include(CPM)
 
 # Header-only libraries #########################################
+if (BLAHDIO_ENABLE_FLAC OR BLAHDIO_ENABLE_MP3 OR BLAHDIO_ENABLE_WAV)
 CPMAddPackage(
 	NAME dr_libs
 	GITHUB_REPOSITORY "mackron/dr_libs"
@@ -24,6 +26,7 @@ CPMAddPackage(
 	GIT_TAG master
 	DOWNLOAD_ONLY YES
 )
+endif()
 
 CPMAddPackage(
 	NAME utfcpp
@@ -40,14 +43,16 @@ list(APPEND include_dirs
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # WavPack #######################################################
-set(WAVPACK_BUILD_COOLEDIT_PLUGIN OFF CACHE BOOL "Build CoolEdit plugin" FORCE)
-set(WAVPACK_BUILD_WINAMP_PLUGIN OFF CACHE BOOL "Build WinAmp plugin" FORCE)
-set(WAVPACK_BUILD_PROGRAMS OFF CACHE BOOL "Build programs" FORCE)
-set(WAVPACK_BUILD_DOCS OFF CACHE BOOL "Build documentation" FORCE)
-set(BUILD_TESTING OFF CACHE BOOL "Build tests" FORCE)
-CPMAddPackage("gh:dbry/wavpack#master")
-list(APPEND include_dirs ${wavpack_SOURCE_DIR}/include)
-list(APPEND link_libs wavpack)
+if (BLAHDIO_ENABLE_WAVPACK)
+	set(WAVPACK_BUILD_COOLEDIT_PLUGIN OFF CACHE BOOL "Build CoolEdit plugin" FORCE)
+	set(WAVPACK_BUILD_WINAMP_PLUGIN OFF CACHE BOOL "Build WinAmp plugin" FORCE)
+	set(WAVPACK_BUILD_PROGRAMS OFF CACHE BOOL "Build programs" FORCE)
+	set(WAVPACK_BUILD_DOCS OFF CACHE BOOL "Build documentation" FORCE)
+	set(BUILD_TESTING OFF CACHE BOOL "Build tests" FORCE)
+	CPMAddPackage("gh:dbry/wavpack#master")
+	list(APPEND include_dirs ${wavpack_SOURCE_DIR}/include)
+	list(APPEND link_libs wavpack)
+endif()
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 list(APPEND PUBLIC_HEADERS
@@ -176,3 +181,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 	$<$<BOOL:${BLAHDIO_ENABLE_WAV}>:BLAHDIO_ENABLE_WAV>
 	$<$<BOOL:${BLAHDIO_ENABLE_WAVPACK}>:BLAHDIO_ENABLE_WAVPACK>
 )
+
+if (BLAHDIO_BUILD_TESTS)
+	add_subdirectory(tests)
+endif()
