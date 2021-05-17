@@ -10,6 +10,10 @@ CPMAddPackage(
 
 list(APPEND TESTS_SRC
 	src/main.cpp
+	src/util.h
+	src/util.cpp
+
+	src/wavpack_write_read_compare.cpp
 )
 
 add_executable(${PROJECT_NAME} ${TESTS_SRC})
@@ -25,4 +29,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	CXX_STANDARD 17
+)
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+	DIR_TEST_FILES="test_files"
 )
