@@ -7,9 +7,6 @@ SCENARIO("WavPack files can be written and read back with no errors", "[wavpack]
 	static constexpr auto NUM_FRAMES = 44100;
 	static constexpr auto NUM_CHANNELS = 2;
 	static constexpr auto SAMPLE_RATE = 44100;
-	static constexpr auto BIT_DEPTH = 32;
-	static constexpr auto WRITE_CHUNK_SIZE = 512;
-	static constexpr auto READ_CHUNK_SIZE = 512;
 	
 	static const auto FILE_TEST_WV = std::filesystem::path(DIR_TEST_FILES) / "test.wv";
 
