@@ -183,5 +183,14 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 )
 
 if (BLAHDIO_BUILD_TESTS)
+
+	include(CTest)
+	enable_testing()
+
 	add_subdirectory(tests)
+
+	add_test(NAME tests
+		COMMAND blahdio_tests
+	)
+
 endif()
