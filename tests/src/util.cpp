@@ -26,9 +26,10 @@ void compare_frames(const float* const a, const float* const b, std::uint64_t nu
 	}
 }
 
-void write_wavpack(
+void write_frames(
 		const std::filesystem::path& file_path,
 		const float* write_buffer,
+		AudioType audio_type,
 		std::uint64_t num_frames,
 		int num_channels,
 		int sample_rate,
@@ -49,7 +50,7 @@ void write_wavpack(
 		std::filesystem::create_directory(dir);
 	}
 
-	AudioWriter writer(file_path, AudioType::WavPack, write_format);
+	AudioWriter writer(file_path, audio_type, write_format);
 
 	AudioWriter::Callbacks writer_callbacks;
 
@@ -69,16 +70,17 @@ void write_wavpack(
 	writer.write_frames(writer_callbacks, chunk_size);
 }
 
-void read_wavpack(
+void read_frames(
 		const std::filesystem::path& file_path,
 		float* read_buffer,
+		AudioType audio_type_expected,
 		std::uint64_t num_frames_expected,
 		int num_channels_expected,
 		int sample_rate_expected,
 		int bit_depth_expected,
 		int chunk_size)
 {
-	AudioReader reader(file_path, AudioType::WavPack);
+	AudioReader reader(file_path, audio_type_expected);
 
 	reader.read_header();
 
@@ -86,11 +88,13 @@ void read_wavpack(
 	const auto num_channels = reader.get_num_channels();
 	const auto sample_rate = reader.get_sample_rate();
 	const auto bit_depth = reader.get_bit_depth();
+	const auto audio_type = reader.get_type();
 
 	REQUIRE(num_frames == num_frames_expected);
 	REQUIRE(num_channels == num_channels_expected);
 	REQUIRE(sample_rate == sample_rate_expected);
 	REQUIRE(bit_depth == bit_depth_expected);
+	REQUIRE(audio_type == audio_type_expected);
 
 	blahdio::AudioReader::Callbacks reader_callbacks;
 
@@ -108,6 +112,101 @@ void read_wavpack(
 	};
 
 	reader.read_frames(reader_callbacks, chunk_size);
+}
+
+std::string to_string(AudioType audio_type)
+{
+	switch (audio_type)
+	{
+		case AudioType::None: return "None";
+		case AudioType::Binary: return "Binary";
+		case AudioType::FLAC: return "FLAC";
+		case AudioType::MP3: return "MP3";
+		case AudioType::WAV: return "WAV";
+		case AudioType::WavPack: return "WavPack";
+	}
+}
+
+std::string get_ext(AudioType audio_type)
+{
+	switch (audio_type)
+	{
+		case AudioType::None: return "";
+		case AudioType::Binary: return "bin";
+		case AudioType::FLAC: return "flac";
+		case AudioType::MP3: return "mp3";
+		case AudioType::WAV: return "wav";
+		case AudioType::WavPack: return "wv";
+	}
+}
+
+void write_read_compare(
+		const float* data,
+		blahdio::AudioType audio_type,
+		std::uint64_t num_frames,
+		int num_channels,
+		int sample_rate,
+		int bit_depth,
+		int chunk_size)
+{
+	WHEN("The data is written as a " << bit_depth << "-bit " << to_string(audio_type) << " @" << sample_rate << " file")
+	{
+		const auto test_file_name = std::string("test_") + std::to_string(bit_depth) + "_" + std::to_string(sample_rate);
+		const auto test_file_path = (std::filesystem::path(DIR_TEST_FILES) / test_file_name).replace_extension(get_ext(audio_type));
+
+		util::write_frames(test_file_path, data, audio_type, num_frames, num_channels, sample_rate, bit_depth);
+
+		AND_WHEN("The data is read back")
+		{
+			std::vector<float> read_buffer(num_frames * num_channels);
+
+			util::read_frames(test_file_path, read_buffer.data(), audio_type, num_frames, num_channels, sample_rate, bit_depth);
+
+			THEN("The buffer written is the same as the buffer read back")
+			{
+				const auto tolerance = 1.0f / (1 << bit_depth / 2);
+
+				util::compare_frames(data, read_buffer.data(), num_frames, num_channels, tolerance);
+			}
+		}
+	}
+}
+
+std::vector<float> generate_sine_data(int num_frames, int num_channels, float frequency, int sample_rate)
+{
+	std::vector<float> out(num_frames * num_channels);
+
+	double phase = 0.0;
+
+	for (int i = 0; i < num_frames; i++)
+	{
+		float o = std::sin(phase);
+
+		phase += 3.14159*2 * frequency / sample_rate;
+
+		for (int c = 0; c < num_channels; c++)
+		{
+			out[(i * num_channels) + c] = o;
+		}
+	}
+
+	return out;
+}
+
+std::vector<float> generate_noise_data(int num_frames, int num_channels)
+{
+	std::vector<float> out(num_frames * num_channels);
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_real_distribution<> dis(-1.0, 1.0);
+
+	for (int i = 0; i < num_frames * num_channels; i++)
+	{
+		out[i] = dis(gen);
+	}
+
+	return out;
 }
 
 } // util

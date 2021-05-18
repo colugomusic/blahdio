@@ -13,7 +13,7 @@ list(APPEND TESTS_SRC
 	src/util.h
 	src/util.cpp
 
-	src/wavpack_write_read_compare.cpp
+	src/write_read_compare.cpp
 )
 
 add_executable(${PROJECT_NAME} ${TESTS_SRC})
