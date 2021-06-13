@@ -58,12 +58,18 @@ endif()
 list(APPEND PUBLIC_HEADERS
 	include/blahdio/audio_data_format.h
 	include/blahdio/audio_reader.h
+	include/blahdio/audio_streamer.h
 	include/blahdio/audio_writer.h
 	include/blahdio/audio_type.h
 )
 
 list(APPEND SRC
 	src/read/audio_reader.cpp
+	src/read/audio_reader_impl.h
+	src/read/audio_reader_impl.cpp
+	src/read/audio_streamer.cpp
+	src/read/audio_streamer_impl.h
+	src/read/audio_streamer_impl.cpp
 	src/read/generic_reader.h
 	src/read/typed_read_handler.h
 	src/read/typed_read_handler.cpp

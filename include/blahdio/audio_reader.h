@@ -3,6 +3,7 @@
 #include <functional>
 #include <string>
 #include "audio_data_format.h"
+#include "audio_streamer.h"
 #include "audio_type.h"
 
 namespace blahdio {
@@ -70,6 +71,8 @@ public:
 	int get_bit_depth() const;
 
 	AudioType get_type() const;
+
+	AudioStreamer stream();
 
 private:
 

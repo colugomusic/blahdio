@@ -12,8 +12,18 @@ struct Handler
 	using ReadHeaderFunc = std::function<void(int frame_size, AudioDataFormat*)>;
 	using ReadFramesFunc = std::function<void(AudioReader::Callbacks, int frame_size, std::uint32_t chunk_size)>;
 
+	using StreamOpenFunc = std::function<bool(int frame_size, AudioDataFormat*)>;
+	using StreamReadFunc = std::function<std::uint32_t(void* buffer, std::uint32_t frames_to_read)>;
+	using StreamCloseFunc = std::function<void()>;
+
 	ReadHeaderFunc read_header;
 	ReadFramesFunc read_frames;
+
+	void* stream;
+
+	StreamOpenFunc stream_open;
+	StreamReadFunc stream_read;
+	StreamCloseFunc stream_close;
 };
 
 class Reader : public GenericReader
