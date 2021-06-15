@@ -94,9 +94,9 @@ Handlers make_handlers(const void* data, std::size_t data_size)
 	return out;
 }
 
-static std::vector<read::typed::Handler> make_default_attempt_order(const Handlers& handlers)
+static std::vector<std::shared_ptr<typed::Handler>> make_default_attempt_order(const Handlers& handlers)
 {
-	std::vector<typed::Handler> out;
+	std::vector<std::shared_ptr<typed::Handler>> out;
 
 #	if BLAHDIO_ENABLE_WAV
 		out.push_back(handlers.wav);
@@ -117,7 +117,7 @@ static std::vector<read::typed::Handler> make_default_attempt_order(const Handle
 	return out;
 }
 
-std::vector<read::typed::Handler> Handlers::make_type_attempt_order(AudioType type_hint) const
+std::vector<std::shared_ptr<typed::Handler>> Handlers::make_type_attempt_order(AudioType type_hint) const
 {
 	switch (type_hint)
 	{

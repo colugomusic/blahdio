@@ -63,72 +63,89 @@ static drwav_bool32 drwav_stream_seek(void* user_data, int offset, drwav_seek_or
 	return stream->seek(convert(origin), offset);
 }
 
-// File
-typed::Handler make_handler(const std::string& utf8_path)
+struct WavFileHandler : public typed::Handler
 {
-	typed::Handler out;
+	WavFileHandler(const std::string& utf8_path)
+		: utf8_path_(utf8_path)
+	{
+	}
 
-	out.type = AudioType::WAV;
+	AudioType type() const override { return AudioType::WAV; }
 
-	out.try_read_header = [utf8_path](AudioDataFormat* format)
+	bool try_read_header(AudioDataFormat* format)
 	{
 		drwav wav;
 
-		if (!dr_libs::wav::init_file(&wav, utf8_path)) return false;
+		if (!dr_libs::wav::init_file(&wav, utf8_path_)) return false;
 
 		*format = get_header_info(&wav);
 
 		drwav_uninit(&wav);
 
 		return true;
-	};
+	}
 
-	out.read_frames = [utf8_path](AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
+	void read_frames(AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size) override
 	{
 		drwav wav;
 
-		if (!dr_libs::wav::init_file(&wav, utf8_path)) throw std::runtime_error("Read error");
+		if (!dr_libs::wav::init_file(&wav, utf8_path_)) throw std::runtime_error("Read error");
 
 		read_frame_data(&wav, callbacks, format, chunk_size);
 
 		drwav_uninit(&wav);
-	};
+	}
 
-	out.stream_open = [&out, utf8_path](AudioDataFormat* format)
+	bool stream_open(AudioDataFormat* format) override
 	{
-		auto wav = new drwav;
+		if (stream_) return false;
 
-		if (!dr_libs::wav::init_file(wav, utf8_path))
+		stream_ = new drwav;
+
+		if (!dr_libs::wav::init_file(stream_, utf8_path_))
 		{
-			delete wav;
+			delete stream_;
 			return false;
 		}
 
-		*format = get_header_info(wav);
-
-		out.stream = wav;
+		*format = get_header_info(stream_);
 
 		return true;
-	};
+	}
 
-	out.stream_read = [&out](void* buffer, std::uint32_t frames_to_read)
+	std::uint32_t stream_read(void* buffer, std::uint32_t frames_to_read) override
 	{
-		return drwav_read_pcm_frames_f32((drwav*)(out.stream), frames_to_read, (float*)(buffer));
-	};
+		if (!stream_) return 0;
 
-	out.stream_close = [&out]()
+		return std::uint32_t(drwav_read_pcm_frames_f32(stream_, std::uint64_t(frames_to_read), (float*)(buffer)));
+	}
+
+	void stream_close() override
 	{
-		const auto wav = (drwav*)(out.stream);
-		drwav_uninit(wav);
-		delete wav;
-	};
+		if (!stream_) return;
 
-	return out;
+		drwav_uninit(stream_);
+
+		delete stream_;
+	}
+
+private:
+
+	std::string utf8_path_;
+	drwav* stream_ = nullptr;
+};
+
+// File
+std::shared_ptr<typed::Handler> make_handler(const std::string& utf8_path)
+{
+	return std::make_shared<WavFileHandler>(utf8_path);
 }
 
 // Stream
-typed::Handler make_handler(const AudioReader::Stream& stream)
+std::shared_ptr<typed::Handler> make_handler(const AudioReader::Stream& stream)
 {
+	return nullptr;
+	/*
 	typed::Handler out;
 
 	out.type = AudioType::WAV;
@@ -193,11 +210,14 @@ typed::Handler make_handler(const AudioReader::Stream& stream)
 	};
 
 	return out;
+	*/
 }
 
 // Memory
-typed::Handler make_handler(const void* data, std::size_t data_size)
+std::shared_ptr<typed::Handler> make_handler(const void* data, std::size_t data_size)
 {
+	return nullptr;
+	/*
 	typed::Handler out;
 
 	out.type = AudioType::WAV;
@@ -256,11 +276,12 @@ typed::Handler make_handler(const void* data, std::size_t data_size)
 	};
 
 	return out;
+	*/
 }
 
-std::vector<typed::Handler> make_attempt_order(const typed::Handlers& handlers)
+std::vector<std::shared_ptr<typed::Handler>> make_attempt_order(const typed::Handlers& handlers)
 {
-	std::vector<typed::Handler> out;
+	std::vector<std::shared_ptr<typed::Handler>> out;
 
 	out.push_back(handlers.wav);
 

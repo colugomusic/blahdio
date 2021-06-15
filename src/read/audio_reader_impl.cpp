@@ -71,7 +71,7 @@ void AudioReader::read_typed_header()
 	{
 		AudioDataFormat format;
 
-		if (type_handler && type_handler.try_read_header(&format))
+		if (type_handler && type_handler->try_read_header(&format))
 		{
 			active_typed_handler_ = type_handler;
 			format_ = format;
@@ -95,7 +95,7 @@ void AudioReader::open_typed_stream()
 	{
 		AudioDataFormat format;
 
-		if (type_handler && type_handler.stream_open(&format))
+		if (type_handler && type_handler->stream_open(&format))
 		{
 			active_typed_handler_ = type_handler;
 			format_ = format;
@@ -108,12 +108,12 @@ void AudioReader::open_typed_stream()
 
 void AudioReader::close_binary_stream()
 {
-	active_typed_handler_.stream_close();
+	binary_handler_.stream_close();
 }
 
 void AudioReader::close_typed_stream()
 {
-	binary_handler_.stream_close();
+	active_typed_handler_->stream_close();
 }
 
 void AudioReader::read_binary_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size)
@@ -124,13 +124,13 @@ void AudioReader::read_binary_frames(blahdio::AudioReader::Callbacks callbacks, 
 void AudioReader::read_typed_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size)
 {
 	// If the header hasn't been read yet, read it now
-	if (active_typed_handler_.type == AudioType::None)
+	if (active_typed_handler_->type() == AudioType::None)
 	{
 		// Will throw if the audio type couldn't be deduced
 		read_typed_header();
 	}
 
-	active_typed_handler_.read_frames(callbacks, format_, chunk_size);
+	active_typed_handler_->read_frames(callbacks, format_, chunk_size);
 }
 
 void AudioReader::stream_open()
@@ -176,7 +176,7 @@ std::uint32_t AudioReader::read_binary_frames(void* buffer, std::uint32_t frames
 
 std::uint32_t AudioReader::read_typed_frames(void* buffer, std::uint32_t frames_to_read)
 {
-	return active_typed_handler_.stream_read(buffer, frames_to_read);
+	return active_typed_handler_->stream_read(buffer, frames_to_read);
 }
 
 AudioReader::AudioReader(const std::string& utf8_path, AudioType type_hint)

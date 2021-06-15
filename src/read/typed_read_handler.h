@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "blahdio/audio_data_format.h"
@@ -11,46 +12,35 @@ namespace typed {
 
 struct Handler
 {
-	using TryReadHeaderFunc = std::function<bool(AudioDataFormat*)>;
-	using ReadFramesFunc = std::function<void(AudioReader::Callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)>;
+	virtual AudioType type() const { return AudioType::None; }
 
-	using StreamOpenFunc = std::function<bool(AudioDataFormat*)>;
-	using StreamReadFunc = std::function<std::uint32_t(void* buffer, std::uint32_t frames_to_read)>;
-	using StreamCloseFunc = std::function<void()>;
+	virtual bool try_read_header(AudioDataFormat* format) = 0;
+	virtual void read_frames(AudioReader::Callbacks, const AudioDataFormat& format, std::uint32_t chunk_size) = 0;
 
-	AudioType type = AudioType::None;
-
-	TryReadHeaderFunc try_read_header;
-	ReadFramesFunc read_frames;
-
-	void* stream;
-
-	StreamOpenFunc stream_open;
-	StreamReadFunc stream_read;
-	StreamCloseFunc stream_close;
-		
-	operator bool() const { return type != AudioType::None; }
+	virtual bool stream_open(AudioDataFormat* format) = 0;
+	virtual std::uint32_t stream_read(void* buffer, std::uint32_t frames_to_read) = 0;
+	virtual void stream_close() = 0;
 };
 
 struct Handlers
 {
 #	if BLAHDIO_ENABLE_FLAC
-		Handler flac;
+		std::shared_ptr<Handler> flac;
 #	endif
 
 #	if BLAHDIO_ENABLE_MP3
-		Handler mp3;
+		std::shared_ptr<Handler> mp3;
 #	endif
 
 #	if BLAHDIO_ENABLE_WAV
-		Handler wav;
+		std::shared_ptr<Handler> wav;
 #	endif
 
 #	if BLAHDIO_ENABLE_WAVPACK
-		Handler wavpack;
+		std::shared_ptr<Handler> wavpack;
 #	endif
 
-	std::vector<read::typed::Handler> make_type_attempt_order(AudioType type) const;
+	std::vector<std::shared_ptr<read::typed::Handler>> make_type_attempt_order(AudioType type) const;
 };
 
 extern Handlers make_handlers(const std::string& utf8_path);

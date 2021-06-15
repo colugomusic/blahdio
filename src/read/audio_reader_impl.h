@@ -22,7 +22,7 @@ public:
 
 	const AudioDataFormat& get_format() const { return format_; }
 
-	AudioType get_type() const { return active_typed_handler_.type; }
+	AudioType get_type() const { return active_typed_handler_->type(); }
 
 	void stream_open();
 	void stream_close();
@@ -30,7 +30,7 @@ public:
 private:
 
 	read::typed::Handlers typed_handlers_;
-	read::typed::Handler active_typed_handler_;
+	std::shared_ptr<read::typed::Handler> active_typed_handler_;
 	read::binary::Handler binary_handler_;
 
 	AudioType type_hint_ = AudioType::None;

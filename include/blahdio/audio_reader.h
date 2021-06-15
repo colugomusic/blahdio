@@ -3,12 +3,13 @@
 #include <functional>
 #include <string>
 #include "audio_data_format.h"
-#include "audio_streamer.h"
 #include "audio_type.h"
 
 namespace blahdio {
 
 namespace impl { class AudioReader; }
+
+class AudioStreamer;
 
 class AudioReader
 {
@@ -72,7 +73,7 @@ public:
 
 	AudioType get_type() const;
 
-	AudioStreamer stream();
+	std::shared_ptr<AudioStreamer> streamer();
 
 private:
 

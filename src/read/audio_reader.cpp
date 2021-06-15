@@ -1,4 +1,5 @@
 #include "audio_reader_impl.h"
+#include "blahdio/audio_streamer.h"
 
 namespace blahdio {
 
@@ -62,9 +63,9 @@ AudioType AudioReader::get_type() const
 	return impl_->get_type();
 }
 
-AudioStreamer AudioReader::stream()
+std::shared_ptr<AudioStreamer> AudioReader::streamer()
 {
-	return AudioStreamer(impl_);
+	return std::make_shared<AudioStreamer>(impl_);
 }
 
 } // blahdio

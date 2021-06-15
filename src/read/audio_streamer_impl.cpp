@@ -7,7 +7,6 @@ namespace impl {
 AudioStreamer::AudioStreamer(impl::AudioReader* reader)
 	: reader_(reader)
 {
-	reader_->stream_open();
 }
 
 std::uint32_t AudioStreamer::read_frames(void* buffer, std::uint32_t frames_to_read)
