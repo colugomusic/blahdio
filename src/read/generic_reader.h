@@ -25,8 +25,6 @@ public:
 	int get_sample_rate() const { return sample_rate_; }
 	int get_bit_depth() const { return bit_depth_; }
 
-	virtual void read_frames(Callbacks callbacks, std::uint32_t chunk_size) = 0;
-
 	AudioDataFormat get_header_info() const
 	{
 		AudioDataFormat out;

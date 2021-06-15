@@ -62,20 +62,15 @@ static drmp3_bool32 drmp3_stream_seek(void* user_data, int offset, drmp3_seek_or
 	return stream->seek(convert(origin), offset);
 }
 
-struct MP3FileHandler : public typed::Handler
+struct MP3Handler : public typed::Handler
 {
-	MP3FileHandler(const std::string& utf8_path)
-		: utf8_path_(utf8_path)
-	{
-	}
-
 	AudioType type() const override { return AudioType::MP3; }
 
 	bool try_read_header(AudioDataFormat* format)
 	{
 		drmp3 mp3;
 
-		if (!dr_libs::mp3::init_file(&mp3, utf8_path_)) return false;
+		if (!init(&mp3)) return false;
 
 		*format = get_header_info(&mp3);
 
@@ -88,11 +83,18 @@ struct MP3FileHandler : public typed::Handler
 	{
 		drmp3 mp3;
 
-		if (!dr_libs::mp3::init_file(&mp3, utf8_path_)) throw std::runtime_error("Read error");
+		if (!init(&mp3)) throw std::runtime_error("Read error");
 
 		read_frame_data(&mp3, callbacks, format, chunk_size);
 
 		drmp3_uninit(&mp3);
+	}
+
+	std::uint32_t stream_read(void* buffer, std::uint32_t frames_to_read) override
+	{
+		if (!stream_) return 0;
+
+		return std::uint32_t(drmp3_read_pcm_frames_f32(stream_, std::uint64_t(frames_to_read), (float*)(buffer)));
 	}
 
 	bool stream_open(AudioDataFormat* format) override
@@ -101,7 +103,7 @@ struct MP3FileHandler : public typed::Handler
 
 		stream_ = new drmp3;
 
-		if (!dr_libs::mp3::init_file(stream_, utf8_path_))
+		if (!init(stream_))
 		{
 			delete stream_;
 			return false;
@@ -112,11 +114,11 @@ struct MP3FileHandler : public typed::Handler
 		return true;
 	}
 
-	std::uint32_t stream_read(void* buffer, std::uint32_t frames_to_read) override
+	bool stream_seek(std::uint64_t target_frame) override
 	{
-		if (!stream_) return 0;
+		if (!stream_) return false;
 
-		return std::uint32_t(drmp3_read_pcm_frames_f32(stream_, std::uint64_t(frames_to_read), (float*)(buffer)));
+		return drmp3_seek_to_pcm_frame(stream_, target_frame);
 	}
 
 	void stream_close() override
@@ -128,115 +130,84 @@ struct MP3FileHandler : public typed::Handler
 		delete stream_;
 	}
 
+protected:
+
+	drmp3* stream_ = nullptr;
+
 private:
 
+	virtual bool init(drmp3* mp3) = 0;
+};
+
+struct MP3FileHandler : public MP3Handler
+{
+	MP3FileHandler(const std::string& utf8_path)
+		: utf8_path_(utf8_path)
+	{
+	}
+
+private:
+
+	bool init(drmp3* mp3) override
+	{
+		return dr_libs::mp3::init_file(mp3, utf8_path_);
+	}
+
 	std::string utf8_path_;
-	drmp3* stream_ = nullptr;
+};
+
+struct MP3StreamHandler : public MP3Handler
+{
+	MP3StreamHandler(const AudioReader::Stream& stream)
+		: source_stream_(&stream)
+	{
+	}
+
+private:
+
+	bool init(drmp3* mp3) override
+	{
+		return drmp3_init(mp3, drmp3_stream_read, drmp3_stream_seek, (void*)(source_stream_), nullptr);
+	}
+
+	const AudioReader::Stream* source_stream_;
+};
+
+struct MP3MemoryHandler : public MP3Handler
+{
+	MP3MemoryHandler(const void* data, std::size_t data_size)
+		: data_(data)
+		, data_size_(data_size)
+	{
+	}
+
+private:
+
+	bool init(drmp3* mp3) override
+	{
+		return drmp3_init_memory(mp3, data_, data_size_, nullptr);
+	}
+
+	const void* data_;
+	std::size_t data_size_;
 };
 
 // File
 std::shared_ptr<typed::Handler> make_handler(const std::string& utf8_path)
 {
 	return std::make_shared<MP3FileHandler>(utf8_path);
-	/*
-	const auto try_read_header = [utf8_path](AudioDataFormat* format)
-	{
-		drmp3 mp3;
-
-		if (!dr_libs::mp3::init_file(&mp3, utf8_path)) return false;
-
-		*format = get_header_info(&mp3);
-
-		drmp3_uninit(&mp3);
-
-		return true;
-	};
-
-	const auto read_frames = [utf8_path](AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
-	{
-		drmp3 mp3;
-
-		if (!dr_libs::mp3::init_file(&mp3, utf8_path)) throw std::runtime_error("Read error");
-
-		read_frame_data(&mp3, callbacks, format, chunk_size);
-
-		drmp3_uninit(&mp3);
-	};
-
-	return { AudioType::MP3, try_read_header, read_frames };
-	*/
 }
 
 // Stream
 std::shared_ptr<typed::Handler> make_handler(const AudioReader::Stream& stream)
 {
-	return nullptr;
-	/*
-	const auto try_read_header = [stream](AudioDataFormat* format) -> bool
-	{
-		drmp3 mp3;
-
-		if (!drmp3_init(&mp3, drmp3_stream_read, drmp3_stream_seek, (void*)(&stream), nullptr))
-		{
-			return false;
-		}
-
-		*format = get_header_info(&mp3);
-
-		drmp3_uninit(&mp3);
-
-		return true;
-	};
-
-	const auto read_frames = [stream](AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
-	{
-		drmp3 mp3;
-
-		if (!drmp3_init(&mp3, drmp3_stream_read, drmp3_stream_seek, (void*)(&stream), nullptr))
-		{
-			throw std::runtime_error("Read error");
-		}
-
-		read_stream_data(&mp3, callbacks, format, chunk_size);
-
-		drmp3_uninit(&mp3);
-	};
-
-	return { AudioType::MP3, try_read_header, read_frames };
-	*/
+	return std::make_shared<MP3StreamHandler>(stream);
 }
 
 // Memory
 std::shared_ptr<typed::Handler> make_handler(const void* data, std::size_t data_size)
 {
-	return nullptr;
-	/*
-	const auto try_read_header = [data, data_size](AudioDataFormat* format) -> bool
-	{
-		drmp3 mp3;
-
-		if (!drmp3_init_memory(&mp3, data, data_size, nullptr)) return false;
-
-		*format = get_header_info(&mp3);
-
-		drmp3_uninit(&mp3);
-
-		return true;
-	};
-
-	const auto read_frames = [data, data_size](AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
-	{
-		drmp3 mp3;
-
-		if (!drmp3_init_memory(&mp3, data, data_size, nullptr)) throw std::runtime_error("Read error");
-
-		read_frame_data(&mp3, callbacks, format, chunk_size);
-
-		drmp3_uninit(&mp3);
-	};
-
-	return { AudioType::MP3, try_read_header, read_frames };
-	*/
+	return std::make_shared<MP3MemoryHandler>(data, data_size);
 }
 
 std::vector<std::shared_ptr<typed::Handler>> make_attempt_order(const typed::Handlers& handlers)
@@ -245,8 +216,8 @@ std::vector<std::shared_ptr<typed::Handler>> make_attempt_order(const typed::Han
 
 	out.push_back(handlers.mp3);
 
-#	if BLAHDIO_ENABLE_WAV
-		out.push_back(handlers.wav);
+#	if BLAHDIO_ENABLE_MP3
+		out.push_back(handlers.mp3);
 #	endif
 
 #	if BLAHDIO_ENABLE_FLAC

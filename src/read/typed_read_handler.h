@@ -18,6 +18,7 @@ struct Handler
 	virtual void read_frames(AudioReader::Callbacks, const AudioDataFormat& format, std::uint32_t chunk_size) = 0;
 
 	virtual bool stream_open(AudioDataFormat* format) = 0;
+	virtual bool stream_seek(std::uint64_t target_frame) = 0;
 	virtual std::uint32_t stream_read(void* buffer, std::uint32_t frames_to_read) = 0;
 	virtual void stream_close() = 0;
 };

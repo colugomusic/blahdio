@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <string>
 #include "audio_data_format.h"
 #include "audio_type.h"
@@ -53,8 +54,6 @@ public:
 	// Read from memory
 	AudioReader(const void* data, std::size_t data_size, AudioType type_hint = AudioType::None);
 
-	~AudioReader();
-
 	// Size in bytes of each frame to return when reading AudioType::Binary data
 	void set_binary_frame_size(int frame_size);
 
@@ -77,7 +76,7 @@ public:
 
 private:
 
-	impl::AudioReader* impl_;
+	std::shared_ptr<impl::AudioReader> impl_;
 };
 
 }

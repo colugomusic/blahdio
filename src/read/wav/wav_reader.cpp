@@ -63,20 +63,15 @@ static drwav_bool32 drwav_stream_seek(void* user_data, int offset, drwav_seek_or
 	return stream->seek(convert(origin), offset);
 }
 
-struct WavFileHandler : public typed::Handler
+struct WavHandler : public typed::Handler
 {
-	WavFileHandler(const std::string& utf8_path)
-		: utf8_path_(utf8_path)
-	{
-	}
-
 	AudioType type() const override { return AudioType::WAV; }
 
 	bool try_read_header(AudioDataFormat* format)
 	{
 		drwav wav;
 
-		if (!dr_libs::wav::init_file(&wav, utf8_path_)) return false;
+		if (!init(&wav)) return false;
 
 		*format = get_header_info(&wav);
 
@@ -89,11 +84,18 @@ struct WavFileHandler : public typed::Handler
 	{
 		drwav wav;
 
-		if (!dr_libs::wav::init_file(&wav, utf8_path_)) throw std::runtime_error("Read error");
+		if (!init(&wav)) throw std::runtime_error("Read error");
 
 		read_frame_data(&wav, callbacks, format, chunk_size);
 
 		drwav_uninit(&wav);
+	}
+
+	std::uint32_t stream_read(void* buffer, std::uint32_t frames_to_read) override
+	{
+		if (!stream_) return 0;
+
+		return std::uint32_t(drwav_read_pcm_frames_f32(stream_, std::uint64_t(frames_to_read), (float*)(buffer)));
 	}
 
 	bool stream_open(AudioDataFormat* format) override
@@ -102,7 +104,7 @@ struct WavFileHandler : public typed::Handler
 
 		stream_ = new drwav;
 
-		if (!dr_libs::wav::init_file(stream_, utf8_path_))
+		if (!init(stream_))
 		{
 			delete stream_;
 			return false;
@@ -113,11 +115,11 @@ struct WavFileHandler : public typed::Handler
 		return true;
 	}
 
-	std::uint32_t stream_read(void* buffer, std::uint32_t frames_to_read) override
+	bool stream_seek(std::uint64_t target_frame) override
 	{
-		if (!stream_) return 0;
+		if (!stream_) return false;
 
-		return std::uint32_t(drwav_read_pcm_frames_f32(stream_, std::uint64_t(frames_to_read), (float*)(buffer)));
+		return drwav_seek_to_pcm_frame(stream_, target_frame);
 	}
 
 	void stream_close() override
@@ -129,10 +131,66 @@ struct WavFileHandler : public typed::Handler
 		delete stream_;
 	}
 
+protected:
+
+	drwav* stream_ = nullptr;
+
 private:
 
+	virtual bool init(drwav* wav) = 0;
+};
+
+struct WavFileHandler : public WavHandler
+{
+	WavFileHandler(const std::string& utf8_path)
+		: utf8_path_(utf8_path)
+	{
+	}
+
+private:
+
+	bool init(drwav* wav) override
+	{
+		return dr_libs::wav::init_file(wav, utf8_path_);
+	}
+
 	std::string utf8_path_;
-	drwav* stream_ = nullptr;
+};
+
+struct WavStreamHandler : public WavHandler
+{
+	WavStreamHandler(const AudioReader::Stream& stream)
+		: source_stream_(&stream)
+	{
+	}
+
+private:
+
+	bool init(drwav* wav) override
+	{
+		return drwav_init(wav, drwav_stream_read, drwav_stream_seek, (void*)(source_stream_), nullptr);
+	}
+
+	const AudioReader::Stream* source_stream_;
+};
+
+struct WavMemoryHandler : public WavHandler
+{
+	WavMemoryHandler(const void* data, std::size_t data_size)
+		: data_(data)
+		, data_size_(data_size)
+	{
+	}
+
+private:
+
+	bool init(drwav* wav) override
+	{
+		return drwav_init_memory(wav, data_, data_size_, nullptr);
+	}
+
+	const void* data_;
+	std::size_t data_size_;
 };
 
 // File
@@ -144,139 +202,13 @@ std::shared_ptr<typed::Handler> make_handler(const std::string& utf8_path)
 // Stream
 std::shared_ptr<typed::Handler> make_handler(const AudioReader::Stream& stream)
 {
-	return nullptr;
-	/*
-	typed::Handler out;
-
-	out.type = AudioType::WAV;
-
-	out.try_read_header = [stream](AudioDataFormat* format) -> bool
-	{
-		drwav wav;
-
-		if (!drwav_init(&wav, drwav_stream_read, drwav_stream_seek, (void*)(&stream), nullptr))
-		{
-			return false;
-		}
-
-		*format = get_header_info(&wav);
-
-		drwav_uninit(&wav);
-
-		return true;
-	};
-
-	out.read_frames = [stream](AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
-	{
-		drwav wav;
-
-		if (!drwav_init(&wav, drwav_stream_read, drwav_stream_seek, (void*)(&stream), nullptr))
-		{
-			throw std::runtime_error("Read error");
-		}
-
-		read_stream_data(&wav, callbacks, format, chunk_size);
-
-		drwav_uninit(&wav);
-	};
-
-	out.stream_open = [&out, stream](AudioDataFormat* format)
-	{
-		auto wav = new drwav;
-
-		if (!drwav_init(wav, drwav_stream_read, drwav_stream_seek, (void*)(&stream), nullptr))
-		{
-			delete wav;
-			return false;
-		}
-
-		*format = get_header_info(wav);
-
-		out.stream = wav;
-
-		return true;
-	};
-
-	out.stream_read = [&out](void* buffer, std::uint32_t frames_to_read)
-	{
-		return drwav_read_pcm_frames_f32((drwav*)(out.stream), frames_to_read, (float*)(buffer));
-	};
-
-	out.stream_close = [&out]()
-	{
-		const auto wav = (drwav*)(out.stream);
-		drwav_uninit(wav);
-		delete wav;
-	};
-
-	return out;
-	*/
+	return std::make_shared<WavStreamHandler>(stream);
 }
 
 // Memory
 std::shared_ptr<typed::Handler> make_handler(const void* data, std::size_t data_size)
 {
-	return nullptr;
-	/*
-	typed::Handler out;
-
-	out.type = AudioType::WAV;
-
-	out.try_read_header = [data, data_size](AudioDataFormat* format)
-	{
-		drwav wav;
-
-		if (!drwav_init_memory(&wav, data, data_size, nullptr)) return false;
-
-		*format = get_header_info(&wav);
-
-		drwav_uninit(&wav);
-
-		return true;
-	};
-
-	out.read_frames = [data, data_size](AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
-	{
-		drwav wav;
-
-		if (!drwav_init_memory(&wav, data, data_size, nullptr)) throw std::runtime_error("Read error");
-
-		read_frame_data(&wav, callbacks, format, chunk_size);
-
-		drwav_uninit(&wav);
-	};
-
-	out.stream_open = [&out, data, data_size](AudioDataFormat* format)
-	{
-		auto wav = new drwav;
-
-		if (!drwav_init_memory(wav, data, data_size, nullptr))
-		{
-			delete wav;
-			return false;
-		}
-
-		*format = get_header_info(wav);
-
-		out.stream = wav;
-
-		return true;
-	};
-
-	out.stream_read = [&out](void* buffer, std::uint32_t frames_to_read)
-	{
-		return drwav_read_pcm_frames_f32((drwav*)(out.stream), frames_to_read, (float*)(buffer));
-	};
-
-	out.stream_close = [&out]()
-	{
-		const auto wav = (drwav*)(out.stream);
-		drwav_uninit(wav);
-		delete wav;
-	};
-
-	return out;
-	*/
+	return std::make_shared<WavMemoryHandler>(data, data_size);
 }
 
 std::vector<std::shared_ptr<typed::Handler>> make_attempt_order(const typed::Handlers& handlers)

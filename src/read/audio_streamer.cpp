@@ -3,7 +3,7 @@
 
 namespace blahdio {
 
-AudioStreamer::AudioStreamer(impl::AudioReader* reader)
+AudioStreamer::AudioStreamer(std::shared_ptr<impl::AudioReader> reader)
 	: impl_(new impl::AudioStreamer(reader))
 {
 	impl_->open();
@@ -27,6 +27,11 @@ AudioStreamer::~AudioStreamer()
 std::uint32_t AudioStreamer::read_frames(void* buffer, std::uint32_t frames_to_read)
 {
 	return impl_->read_frames(buffer, frames_to_read);
+}
+
+bool AudioStreamer::skip_to_frame(std::uint64_t frame)
+{
+	return impl_->skip_to_frame(frame);
 }
 
 }

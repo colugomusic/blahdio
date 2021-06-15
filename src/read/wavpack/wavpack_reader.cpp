@@ -19,7 +19,12 @@ Reader::~Reader()
 	}
 }
 
-bool Reader::try_read_header()
+AudioType Reader::type() const
+{
+	return AudioType::WavPack;
+}
+
+bool Reader::try_read_header(AudioDataFormat* format)
 {
 	context_ = open();
 
@@ -61,16 +66,44 @@ bool Reader::try_read_header()
 		};
 	}
 
+	*format = get_header_info();
+
 	return true;
 }
 
-void Reader::read_frames(Callbacks callbacks, std::uint32_t chunk_size)
+void Reader::read_frames(AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
 {
-	if (!context_) try_read_header();
+	wavpack::Reader::Callbacks reader_callbacks;
+
+	reader_callbacks.return_chunk = callbacks.return_chunk;
+	reader_callbacks.should_abort = callbacks.should_abort;
 
 	if (!context_) throw std::runtime_error("Read error");
 
-	do_read_frames(callbacks, chunk_size, chunk_reader_);
+	do_read_frames(reader_callbacks, chunk_size, chunk_reader_);
+}
+
+bool Reader::stream_open(AudioDataFormat* format)
+{
+	// TODO: implement this
+	return false;
+}
+
+bool Reader::stream_seek(std::uint64_t target_frame)
+{
+	// TODO: implement this
+	return false;
+}
+
+std::uint32_t Reader::stream_read(void* buffer, std::uint32_t frames_to_read)
+{
+	// TODO: implement this
+	return 0;
+}
+
+void Reader::stream_close()
+{
+	// TODO: implement this
 }
 
 void Reader::do_read_frames(Callbacks callbacks, std::uint32_t chunk_size, std::function<std::uint32_t(float* buffer, std::uint32_t read_size)> chunk_reader)
@@ -104,92 +137,17 @@ void Reader::do_read_frames(Callbacks callbacks, std::uint32_t chunk_size, std::
 
 std::shared_ptr<typed::Handler> make_handler(const std::string& utf8_path)
 {
-	return nullptr;
-	/*
-	const auto try_read_header = [utf8_path](AudioDataFormat* format) -> bool
-	{
-		wavpack::FileReader reader(utf8_path);
-
-		if (!reader.try_read_header()) return false;
-
-		*format = reader.get_header_info();
-
-		return true;
-	};
-
-	const auto read_frames = [utf8_path](blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
-	{
-		wavpack::FileReader reader(utf8_path);
-		wavpack::Reader::Callbacks reader_callbacks;
-
-		reader_callbacks.return_chunk = callbacks.return_chunk;
-		reader_callbacks.should_abort = callbacks.should_abort;
-
-		reader.read_frames(reader_callbacks, chunk_size);
-	};
-
-	return { AudioType::WavPack, try_read_header, read_frames };
-	*/
+	return std::make_shared<FileReader>(utf8_path);
 }
 
 std::shared_ptr<typed::Handler> make_handler(const AudioReader::Stream& stream)
 {
-	return nullptr;
-	/*
-	const auto try_read_header = [stream](AudioDataFormat* format) -> bool
-	{
-		wavpack::StreamReader reader(stream);
-
-		if (!reader.try_read_header()) return false;
-
-		*format = reader.get_header_info();
-
-		return true;
-	};
-
-	const auto read_frames = [stream](blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
-	{
-		wavpack::StreamReader reader(stream);
-		wavpack::Reader::Callbacks reader_callbacks;
-
-		reader_callbacks.return_chunk = callbacks.return_chunk;
-		reader_callbacks.should_abort = callbacks.should_abort;
-
-		reader.read_frames(reader_callbacks, chunk_size);
-	};
-
-	return { AudioType::WavPack, try_read_header, read_frames };
-	*/
+	return std::make_shared<StreamReader>(stream);
 }
 
 std::shared_ptr<typed::Handler> make_handler(const void* data, std::size_t data_size)
 {
-	return nullptr;
-	/*
-	const auto try_read_header = [data, data_size](AudioDataFormat* format) -> bool
-	{
-		wavpack::MemoryReader reader(data, data_size);
-
-		if (!reader.try_read_header()) return false;
-
-		*format = reader.get_header_info();
-
-		return true;
-	};
-
-	const auto read_frames = [data, data_size](blahdio::AudioReader::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
-	{
-		wavpack::MemoryReader reader(data, data_size);
-		wavpack::Reader::Callbacks reader_callbacks;
-
-		reader_callbacks.return_chunk = callbacks.return_chunk;
-		reader_callbacks.should_abort = callbacks.should_abort;
-
-		reader.read_frames(reader_callbacks, chunk_size);
-	};
-
-	return { AudioType::WavPack, try_read_header, read_frames };
-	*/
+	return std::make_shared<MemoryReader>(data, data_size);
 }
 
 std::vector<std::shared_ptr<typed::Handler>> make_attempt_order(const typed::Handlers& handlers)

@@ -18,7 +18,6 @@ public:
 
 	void read_header();
 	void read_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size);
-	std::uint32_t read_frames(void* buffer, std::uint32_t frames_to_read);
 
 	const AudioDataFormat& get_format() const { return format_; }
 
@@ -26,6 +25,8 @@ public:
 
 	void stream_open();
 	void stream_close();
+	std::uint32_t stream_read_frames(void* buffer, std::uint32_t frames_to_read);
+	bool stream_seek(std::uint64_t frame);
 
 private:
 
@@ -47,6 +48,8 @@ private:
 	void open_typed_stream();
 	void close_binary_stream();
 	void close_typed_stream();
+	bool seek_to_binary_frame(std::uint64_t frame);
+	bool seek_to_typed_frame(std::uint64_t frame);
 
 	void read_binary_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size);
 	void read_typed_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size);

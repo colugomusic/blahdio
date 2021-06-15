@@ -169,6 +169,17 @@ void AudioReader::stream_close()
 	}
 }
 
+bool AudioReader::seek_to_binary_frame(std::uint64_t frame)
+{
+	// TODO: implement this
+	return false;
+}
+
+bool AudioReader::seek_to_typed_frame(std::uint64_t frame)
+{
+	return active_typed_handler_->stream_seek(frame);
+}
+
 std::uint32_t AudioReader::read_binary_frames(void* buffer, std::uint32_t frames_to_read)
 {
 	return binary_handler_.stream_read(buffer, frames_to_read);
@@ -238,7 +249,7 @@ void AudioReader::read_frames(blahdio::AudioReader::Callbacks callbacks, std::ui
 	}
 }
 
-std::uint32_t AudioReader::read_frames(void* buffer, std::uint32_t frames_to_read)
+std::uint32_t AudioReader::stream_read_frames(void* buffer, std::uint32_t frames_to_read)
 {
 	switch (type_hint_)
 	{
@@ -250,6 +261,22 @@ std::uint32_t AudioReader::read_frames(void* buffer, std::uint32_t frames_to_rea
 		default:
 		{
 			return read_typed_frames(buffer, frames_to_read);
+		}
+	}
+}
+
+bool AudioReader::stream_seek(std::uint64_t frame)
+{
+	switch (type_hint_)
+	{
+		case AudioType::Binary:
+		{
+			return seek_to_binary_frame(frame);
+		}
+
+		default:
+		{
+			return seek_to_typed_frame(frame);
 		}
 	}
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 
 namespace blahdio {
 
@@ -10,13 +11,14 @@ class AudioStreamer
 {
 public:
 
-	AudioStreamer(impl::AudioReader* reader);
+	AudioStreamer(std::shared_ptr<impl::AudioReader> reader);
 	AudioStreamer(const AudioStreamer&) = delete;
 	AudioStreamer(AudioStreamer&& rhs) noexcept;
 	~AudioStreamer();
 
 	// Return value < frames_to_read indicates the end of the stream
 	std::uint32_t read_frames(void* buffer, std::uint32_t frames_to_read);
+	bool skip_to_frame(std::uint64_t frame);
 
 private:
 

@@ -4,14 +4,19 @@
 namespace blahdio {
 namespace impl {
 
-AudioStreamer::AudioStreamer(impl::AudioReader* reader)
+AudioStreamer::AudioStreamer(std::shared_ptr<impl::AudioReader> reader)
 	: reader_(reader)
 {
 }
 
 std::uint32_t AudioStreamer::read_frames(void* buffer, std::uint32_t frames_to_read)
 {
-	return reader_->read_frames(buffer, frames_to_read);
+	return reader_->stream_read_frames(buffer, frames_to_read);
+}
+
+bool AudioStreamer::skip_to_frame(std::uint64_t frame)
+{
+	return reader_->stream_seek(frame);
 }
 
 void AudioStreamer::open()
