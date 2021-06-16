@@ -122,6 +122,7 @@ struct WavPackHandler : public typed::Handler
 		auto reader = init();
 
 		if (!reader) return false;
+		if (!reader->try_read_header()) return false;
 
 		*format = reader->get_header_info();
 

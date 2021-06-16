@@ -124,7 +124,7 @@ void AudioReader::read_binary_frames(blahdio::AudioReader::Callbacks callbacks, 
 void AudioReader::read_typed_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size)
 {
 	// If the header hasn't been read yet, read it now
-	if (active_typed_handler_->type() == AudioType::None)
+	if (!active_typed_handler_)
 	{
 		// Will throw if the audio type couldn't be deduced
 		read_typed_header();
