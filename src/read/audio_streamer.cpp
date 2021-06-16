@@ -29,9 +29,9 @@ std::uint32_t AudioStreamer::read_frames(void* buffer, std::uint32_t frames_to_r
 	return impl_->read_frames(buffer, frames_to_read);
 }
 
-bool AudioStreamer::skip_to_frame(std::uint64_t frame)
+bool AudioStreamer::seek(std::uint64_t frame)
 {
-	return impl_->skip_to_frame(frame);
+	return impl_->seek(frame);
 }
 
 }

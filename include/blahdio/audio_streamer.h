@@ -18,7 +18,7 @@ public:
 
 	// Return value < frames_to_read indicates the end of the stream
 	std::uint32_t read_frames(void* buffer, std::uint32_t frames_to_read);
-	bool skip_to_frame(std::uint64_t frame);
+	bool seek(std::uint64_t frame);
 
 private:
 
