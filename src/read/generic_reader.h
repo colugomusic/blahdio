@@ -38,6 +38,8 @@ public:
 		return out;
 	}
 
+	virtual void read_all_frames(Callbacks callbacks, std::uint32_t chunk_size) = 0;
+
 protected:
 
 	int frame_size_ = 0;

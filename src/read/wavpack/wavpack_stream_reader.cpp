@@ -87,7 +87,7 @@ WavpackContext* StreamReader::open()
 	return WavpackOpenFileInputEx64(&stream_reader_, &stream_, nullptr, error, flags, 0);
 }
 
-void StreamReader::do_read_frames(Callbacks callbacks, std::uint32_t chunk_size, std::function<std::uint32_t(float* buffer, std::uint32_t read_size)> chunk_reader)
+void StreamReader::do_read_all_frames(Callbacks callbacks, std::uint32_t chunk_size, std::function<std::uint32_t(float* buffer, std::uint32_t read_size)> chunk_reader)
 {
 	std::uint64_t frame = 0;
 

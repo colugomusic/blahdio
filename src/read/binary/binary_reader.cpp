@@ -8,7 +8,7 @@ namespace blahdio {
 namespace read {
 namespace binary {
 
-void Reader::read_frames(Callbacks callbacks, std::uint32_t chunk_size)
+void Reader::read_all_frames(Callbacks callbacks, std::uint32_t chunk_size)
 {
 	std::uint64_t frame = 0;
 
@@ -50,7 +50,7 @@ Handler make_handler(const std::string& utf8_path)
 		reader_callbacks.return_chunk = callbacks.return_chunk;
 		reader_callbacks.should_abort = callbacks.should_abort;
 
-		reader.read_frames(reader_callbacks, chunk_size);
+		reader.read_all_frames(reader_callbacks, chunk_size);
 	};
 
 	return { read_header, read_frames };
@@ -73,7 +73,7 @@ Handler make_handler(const AudioReader::Stream& stream)
 		reader_callbacks.return_chunk = callbacks.return_chunk;
 		reader_callbacks.should_abort = callbacks.should_abort;
 
-		reader.read_frames(reader_callbacks, chunk_size);
+		reader.read_all_frames(reader_callbacks, chunk_size);
 	};
 
 	return { read_header, read_frames };
@@ -96,7 +96,7 @@ Handler make_handler(const void* data, std::size_t data_size)
 		reader_callbacks.return_chunk = callbacks.return_chunk;
 		reader_callbacks.should_abort = callbacks.should_abort;
 
-		reader.read_frames(reader_callbacks, chunk_size);
+		reader.read_all_frames(reader_callbacks, chunk_size);
 	};
 
 	return { read_header, read_frames };

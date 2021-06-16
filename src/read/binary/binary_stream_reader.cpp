@@ -12,7 +12,7 @@ StreamReader::StreamReader(const AudioReader::Stream& stream, int frame_size)
 	num_channels_ = 1;
 }
 
-void StreamReader::read_frames(Callbacks callbacks, std::uint32_t chunk_size)
+void StreamReader::read_all_frames(Callbacks callbacks, std::uint32_t chunk_size)
 {
 	std::uint64_t frame = 0;
 

@@ -32,7 +32,7 @@ class Reader : public GenericReader
 
 public:
 
-	virtual void read_frames(Callbacks callbacks, std::uint32_t chunk_size);
+	virtual void read_all_frames(Callbacks callbacks, std::uint32_t chunk_size) override;
 };
 
 extern Handler make_handler(const std::string& utf8_path);
