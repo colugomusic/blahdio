@@ -125,8 +125,6 @@ struct FLACHandler : public typed::Handler
 		if (!stream_) return;
 
 		drflac_close(stream_);
-
-		delete stream_;
 	}
 
 protected:
