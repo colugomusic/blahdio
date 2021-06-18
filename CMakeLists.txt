@@ -61,9 +61,12 @@ list(APPEND PUBLIC_HEADERS
 	include/blahdio/audio_streamer.h
 	include/blahdio/audio_writer.h
 	include/blahdio/audio_type.h
+	include/blahdio/library_info.h
 )
 
 list(APPEND SRC
+	src/library_info.cpp
+
 	src/read/audio_reader.cpp
 	src/read/audio_reader_impl.h
 	src/read/audio_reader_impl.cpp
