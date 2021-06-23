@@ -67,7 +67,7 @@ struct WavHandler : public typed::Handler
 {
 	AudioType type() const override { return AudioType::WAV; }
 
-	bool try_read_header(AudioDataFormat* format)
+	bool try_read_header(AudioDataFormat* format) override
 	{
 		drwav wav;
 

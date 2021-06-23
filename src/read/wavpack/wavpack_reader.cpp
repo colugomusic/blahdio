@@ -117,7 +117,7 @@ struct WavPackHandler : public typed::Handler
 {
 	AudioType type() const override { return AudioType::WavPack; }
 
-	virtual bool try_read_header(AudioDataFormat* format)
+	virtual bool try_read_header(AudioDataFormat* format) override
 	{
 		auto reader = init();
 
