@@ -66,7 +66,7 @@ struct MP3Handler : public typed::Handler
 {
 	AudioType type() const override { return AudioType::MP3; }
 
-	bool try_read_header(AudioDataFormat* format)
+	bool try_read_header(AudioDataFormat* format) override
 	{
 		drmp3 mp3;
 
