@@ -14,6 +14,8 @@ static void wavpack_write_file(WavpackBlockOutput blockout, void* id, const Audi
 
 	constexpr auto CFG_MONO = 4;
 	constexpr auto CFG_STEREO = 3;
+	constexpr auto NORMALIZED_FLOAT = 127;
+	constexpr auto UNNORMALIZED_FLOAT = 128;
 
 	WavpackConfig config = { 0 };
 
@@ -22,6 +24,21 @@ static void wavpack_write_file(WavpackBlockOutput blockout, void* id, const Audi
 	config.channel_mask = format.num_channels == 1 ? CFG_MONO : CFG_STEREO;
 	config.num_channels = format.num_channels;
 	config.sample_rate = format.sample_rate;
+
+	switch (format.wavpack.type)
+	{
+		case AudioDataFormat::WavpackFormat::StorageType::Float:
+		{
+			config.float_norm_exp = UNNORMALIZED_FLOAT;
+			break;
+		}
+
+		case AudioDataFormat::WavpackFormat::StorageType::NormalizedFloat:
+		{
+			config.float_norm_exp = NORMALIZED_FLOAT;
+			break;
+		}
+	}
 
 	if (!WavpackSetConfiguration64(context, &config, format.num_frames, nullptr))
 	{
@@ -32,6 +49,8 @@ static void wavpack_write_file(WavpackBlockOutput blockout, void* id, const Audi
 	{
 		throw std::runtime_error(WavpackGetErrorMessage(context));
 	}
+
+	const auto int_scale = (1 << (format.bit_depth - 1)) - 1;
 
 	std::uint64_t frame = 0;
 
@@ -50,18 +69,35 @@ static void wavpack_write_file(WavpackBlockOutput blockout, void* id, const Audi
 
 		callbacks.get_next_chunk(interleaved_frames.data(), frame, write_size);
 
-		std::vector<std::int32_t> samples(size_t(write_size) * format.num_channels);
-
-		const auto scale = (1 << (format.bit_depth - 1)) - 1;
-
-		for (int i = 0; i < samples.size(); i++)
+		switch (format.wavpack.type)
 		{
-			samples[i] = std::int32_t(double(interleaved_frames[i]) * scale);
-		}
+			case AudioDataFormat::WavpackFormat::StorageType::Float:
+			case AudioDataFormat::WavpackFormat::StorageType::NormalizedFloat:
+			{
+				if (!WavpackPackSamples(context, reinterpret_cast<std::int32_t*>(interleaved_frames.data()), write_size))
+				{
+					throw std::runtime_error("Write error");
+				}
 
-		if (!WavpackPackSamples(context, samples.data(), write_size))
-		{
-			throw std::runtime_error("Write error");
+				break;
+			}
+
+			case AudioDataFormat::WavpackFormat::StorageType::Int:
+			{
+				std::vector<std::int32_t> samples(size_t(write_size) * format.num_channels);
+
+				for (int i = 0; i < samples.size(); i++)
+				{
+					samples[i] = std::int32_t(double(interleaved_frames[i]) * int_scale);
+				}
+
+				if (!WavpackPackSamples(context, samples.data(), write_size))
+				{
+					throw std::runtime_error("Write error");
+				}
+				
+				break;
+			}
 		}
 
 		frame += write_size;
