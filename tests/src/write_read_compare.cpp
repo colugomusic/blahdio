@@ -55,6 +55,11 @@ SCENARIO("Data can be written and read back with no errors", "[wav][wavpack]")
 		},
 	};
 
+	blahdio::AudioDataFormat format;
+
+	format.num_frames = NUM_FRAMES;
+	format.num_channels = NUM_CHANNELS;
+
 	for (const auto & data : DATA)
 	{
 		GIVEN(data.description)
@@ -65,8 +70,38 @@ SCENARIO("Data can be written and read back with no errors", "[wav][wavpack]")
 				{
 					for (auto bit_depth : BIT_DEPTHS)
 					{
-						util::write_read_compare(data.buffer.data(), audio_type, NUM_FRAMES, NUM_CHANNELS, sample_rate, bit_depth);
+						format.bit_depth = bit_depth;
+						format.sample_rate = sample_rate;
+
+						util::write_read_compare(data.buffer.data(), audio_type, format);
 					}
+				}
+			}
+		}
+	}
+
+	format.bit_depth = 32;
+
+	for (const auto & data : DATA)
+	{
+		GIVEN(data.description)
+		{
+			for (auto sample_rate : SAMPLE_RATES)
+			{
+				format.sample_rate = sample_rate;
+
+				GIVEN("WavPack storage type: Normalized float")
+				{
+					format.wavpack.storage_type = blahdio::AudioDataFormat::WavpackFormat::StorageType::NormalizedFloat;
+
+					util::write_read_compare(data.buffer.data(), blahdio::AudioType::WavPack, format);
+				}
+
+				GIVEN("WavPack storage type: Unnormalized float")
+				{
+					format.wavpack.storage_type = blahdio::AudioDataFormat::WavpackFormat::StorageType::Float;
+
+					util::write_read_compare(data.buffer.data(), blahdio::AudioType::WavPack, format);
 				}
 			}
 		}

@@ -30,19 +30,9 @@ void write_frames(
 		const std::filesystem::path& file_path,
 		const float* write_buffer,
 		AudioType audio_type,
-		std::uint64_t num_frames,
-		int num_channels,
-		int sample_rate,
-		int bit_depth,
+		AudioDataFormat write_format,
 		int chunk_size)
 {
-	AudioDataFormat write_format;
-
-	write_format.num_frames = num_frames;
-	write_format.num_channels = num_channels;
-	write_format.sample_rate = sample_rate;
-	write_format.bit_depth = bit_depth;
-
 	const auto dir = file_path.parent_path();
 
 	if (!std::filesystem::exists(dir))
@@ -50,19 +40,19 @@ void write_frames(
 		std::filesystem::create_directory(dir);
 	}
 
-	AudioWriter writer(file_path, audio_type, write_format);
+	AudioWriter writer(file_path.string(), audio_type, write_format);
 
 	AudioWriter::Callbacks writer_callbacks;
 
 	writer_callbacks.should_abort = []() { return false; };
 
-	writer_callbacks.get_next_chunk = [write_buffer, num_channels](float* buffer, std::uint64_t frame, std::uint32_t num_frames)
+	writer_callbacks.get_next_chunk = [write_buffer, write_format](float* buffer, std::uint64_t frame, std::uint32_t num_frames)
 	{
-		for(int i = 0; i < num_frames; i++)
+		for(std::uint32_t i = 0; i < num_frames; i++)
 		{
-			for (int c = 0; c < num_channels; c++)
+			for (int c = 0; c < write_format.num_channels; c++)
 			{
-				buffer[(i * num_channels) + c] = write_buffer[((frame + i) * num_channels) + c];
+				buffer[(i * write_format.num_channels) + c] = write_buffer[((frame + i) * write_format.num_channels) + c];
 			}
 		}
 	};
@@ -74,13 +64,10 @@ void read_frames(
 		const std::filesystem::path& file_path,
 		float* read_buffer,
 		AudioType audio_type_expected,
-		std::uint64_t num_frames_expected,
-		int num_channels_expected,
-		int sample_rate_expected,
-		int bit_depth_expected,
+		AudioDataFormat format_expected,
 		int chunk_size)
 {
-	AudioReader reader(file_path, audio_type_expected);
+	AudioReader reader(file_path.string(), audio_type_expected);
 
 	reader.read_header();
 
@@ -90,10 +77,10 @@ void read_frames(
 	const auto bit_depth = reader.get_bit_depth();
 	const auto audio_type = reader.get_type();
 
-	REQUIRE(num_frames == num_frames_expected);
-	REQUIRE(num_channels == num_channels_expected);
-	REQUIRE(sample_rate == sample_rate_expected);
-	REQUIRE(bit_depth == bit_depth_expected);
+	REQUIRE(num_frames == format_expected.num_frames);
+	REQUIRE(num_channels == format_expected.num_channels);
+	REQUIRE(sample_rate == format_expected.sample_rate);
+	REQUIRE(bit_depth == format_expected.bit_depth);
 	REQUIRE(audio_type == audio_type_expected);
 
 	blahdio::AudioReader::Callbacks reader_callbacks;
@@ -102,7 +89,7 @@ void read_frames(
 
 	reader_callbacks.return_chunk = [read_buffer, num_channels](const void* data, std::uint64_t frame, std::uint32_t num_frames)
 	{
-		for (int i = 0; i < num_frames; i++)
+		for (std::uint32_t i = 0; i < num_frames; i++)
 		{
 			for (int c = 0; c < num_channels; c++)
 			{
@@ -124,6 +111,7 @@ std::string to_string(AudioType audio_type)
 		case AudioType::MP3: return "MP3";
 		case AudioType::WAV: return "WAV";
 		case AudioType::WavPack: return "WavPack";
+		default: return "Unknown";
 	}
 }
 
@@ -137,36 +125,34 @@ std::string get_ext(AudioType audio_type)
 		case AudioType::MP3: return "mp3";
 		case AudioType::WAV: return "wav";
 		case AudioType::WavPack: return "wv";
+		default: return "Unknown";
 	}
 }
 
 void write_read_compare(
 		const float* data,
 		blahdio::AudioType audio_type,
-		std::uint64_t num_frames,
-		int num_channels,
-		int sample_rate,
-		int bit_depth,
+		blahdio::AudioDataFormat format,
 		int chunk_size)
 {
-	WHEN("The data is written as a " << bit_depth << "-bit " << to_string(audio_type) << " @" << sample_rate << " file")
+	WHEN("The data is written as a " << format.bit_depth << "-bit " << to_string(audio_type) << " @" << format.sample_rate << " file")
 	{
-		const auto test_file_name = std::string("test_") + std::to_string(bit_depth) + "_" + std::to_string(sample_rate);
+		const auto test_file_name = std::string("test_") + std::to_string(format.bit_depth) + "_" + std::to_string(format.sample_rate);
 		const auto test_file_path = (std::filesystem::path(DIR_TEST_FILES) / test_file_name).replace_extension(get_ext(audio_type));
 
-		util::write_frames(test_file_path, data, audio_type, num_frames, num_channels, sample_rate, bit_depth);
+		util::write_frames(test_file_path, data, audio_type, format);
 
 		AND_WHEN("The data is read back")
 		{
-			std::vector<float> read_buffer(num_frames * num_channels);
+			std::vector<float> read_buffer(format.num_frames * format.num_channels);
 
-			util::read_frames(test_file_path, read_buffer.data(), audio_type, num_frames, num_channels, sample_rate, bit_depth);
+			util::read_frames(test_file_path, read_buffer.data(), audio_type, format);
 
 			THEN("The buffer written is the same as the buffer read back")
 			{
-				const auto tolerance = 1.0f / (1 << bit_depth / 2);
+				const auto tolerance = 1.0f / (1 << format.bit_depth / 2);
 
-				util::compare_frames(data, read_buffer.data(), num_frames, num_channels, tolerance);
+				util::compare_frames(data, read_buffer.data(), format.num_frames, format.num_channels, tolerance);
 			}
 		}
 	}
@@ -180,7 +166,7 @@ std::vector<float> generate_sine_data(int num_frames, int num_channels, float fr
 
 	for (int i = 0; i < num_frames; i++)
 	{
-		float o = std::sin(phase);
+		float o = float(std::sin(phase));
 
 		phase += 3.14159*2 * frequency / sample_rate;
 
@@ -203,7 +189,7 @@ std::vector<float> generate_noise_data(int num_frames, int num_channels)
 
 	for (int i = 0; i < num_frames * num_channels; i++)
 	{
-		out[i] = dis(gen);
+		out[i] = float(dis(gen));
 	}
 
 	return out;
