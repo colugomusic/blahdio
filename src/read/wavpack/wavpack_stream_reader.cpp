@@ -79,7 +79,7 @@ WavpackContext* StreamReader::open()
 	int flags = 0;
 
 	flags |= OPEN_2CH_MAX;
-	flags |= OPEN_NORMALIZE;
+	//flags |= OPEN_NORMALIZE;
 	flags |= OPEN_STREAMING;
 
 	char error[80];

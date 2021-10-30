@@ -15,7 +15,7 @@ WavpackContext* FileReader::open()
 	int flags = 0;
 
 	flags |= OPEN_2CH_MAX;
-	flags |= OPEN_NORMALIZE;
+	//flags |= OPEN_NORMALIZE;
 
 #ifdef _WIN32
 	flags |= OPEN_FILE_UTF8;
