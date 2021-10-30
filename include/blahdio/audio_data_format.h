@@ -22,7 +22,7 @@ struct AudioDataFormat
 			NormalizedFloat,
 		};
 
-		StorageType storage_type { StorageType::Float };
+		StorageType storage_type { StorageType::Int };
 	} wavpack;
 };
 
