@@ -25,7 +25,7 @@ static void wavpack_write_file(WavpackBlockOutput blockout, void* id, const Audi
 	config.num_channels = format.num_channels;
 	config.sample_rate = format.sample_rate;
 
-	switch (format.wavpack.type)
+	switch (format.wavpack.storage_type)
 	{
 		case AudioDataFormat::WavpackFormat::StorageType::Float:
 		{
@@ -69,7 +69,7 @@ static void wavpack_write_file(WavpackBlockOutput blockout, void* id, const Audi
 
 		callbacks.get_next_chunk(interleaved_frames.data(), frame, write_size);
 
-		switch (format.wavpack.type)
+		switch (format.wavpack.storage_type)
 		{
 			case AudioDataFormat::WavpackFormat::StorageType::Float:
 			case AudioDataFormat::WavpackFormat::StorageType::NormalizedFloat:
