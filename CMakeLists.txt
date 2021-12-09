@@ -54,7 +54,7 @@ if (BLAHDIO_ENABLE_WAVPACK)
 	# how to disable this for just one architecture. I assume it's not possible
 	# because the WavPack CMakeLists fails to do it. So if we're building a fat binary
 	# it will be disabled for all architectures
-	if (CMAKE_SYSTEM_NAME STREQUAL Darwin AND "arm64" INLIST CMAKE_OSX_ARCHITECTURES)
+	if (CMAKE_SYSTEM_NAME STREQUAL Darwin AND "arm64" IN_LIST CMAKE_OSX_ARCHITECTURES)
 		set(WAVPACK_ENABLE_ASM OFF CACHE BOOL "Enable assembly optimizations" FORCE)
 	endif()
 
