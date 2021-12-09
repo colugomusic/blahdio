@@ -49,6 +49,15 @@ if (BLAHDIO_ENABLE_WAVPACK)
 	set(WAVPACK_BUILD_PROGRAMS OFF CACHE BOOL "Build programs" FORCE)
 	set(WAVPACK_BUILD_DOCS OFF CACHE BOOL "Build documentation" FORCE)
 	set(BUILD_TESTING OFF CACHE BOOL "Build tests" FORCE)
+
+	# Disable ASM if building for arm64 (WavPack doesn't support it). I don't know
+	# how to disable this for just one architecture. I assume it's not possible
+	# because the WavPack CMakeLists fails to do it. So if we're building a fat binary
+	# it will be disabled for all architectures
+	if (CMAKE_SYSTEM_NAME STREQUAL Darwin AND "arm64" INLIST CMAKE_OSX_ARCHITECTURES)
+		set(WAVPACK_ENABLE_ASM OFF CACHE BOOL "Enable assembly optimizations" FORCE)
+	endif()
+
 	CPMAddPackage("gh:dbry/wavpack#master")
 	list(APPEND include_dirs ${wavpack_SOURCE_DIR}/include)
 	list(APPEND link_libs wavpack)
