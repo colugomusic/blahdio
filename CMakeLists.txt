@@ -58,6 +58,7 @@ if (BLAHDIO_ENABLE_WAVPACK)
 	#	set(WAVPACK_ENABLE_ASM OFF CACHE BOOL "Enable assembly optimizations")
 	#endif()
 
+	set(BUILD_SHARED_LIBS OFF)
 	CPMAddPackage("gh:dbry/wavpack#master")
 	list(APPEND include_dirs ${wavpack_SOURCE_DIR}/include)
 	list(APPEND link_libs wavpack)
