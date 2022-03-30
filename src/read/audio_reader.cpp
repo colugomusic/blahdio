@@ -13,6 +13,11 @@ AudioReader::AudioReader(const void* data, std::size_t data_size, AudioType type
 {
 }
 
+AudioReader::AudioReader(const blahdio::AudioReader::Stream& stream, AudioType type_hint) 
+	: impl_(std::make_shared<impl::AudioReader>(stream, type_hint))
+{
+}
+
 void AudioReader::set_binary_frame_size(int frame_size)
 {
 	impl_->set_binary_frame_size(frame_size);
