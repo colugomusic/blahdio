@@ -59,6 +59,7 @@ SCENARIO("Data can be written and read back with no errors", "[wav][wavpack]")
 
 	format.num_frames = NUM_FRAMES;
 	format.num_channels = NUM_CHANNELS;
+	format.storage_type = blahdio::AudioDataFormat::StorageType::Int;
 
 	for (const auto & data : DATA)
 	{
