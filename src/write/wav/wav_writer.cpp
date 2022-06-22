@@ -8,12 +8,28 @@ namespace blahdio {
 namespace write {
 namespace wav {
 
+static drwav_uint32 get_storage_format(AudioDataFormat::StorageType type)
+{
+	switch (type)
+	{
+		case AudioDataFormat::StorageType::Int:
+		{
+			return DR_WAVE_FORMAT_PCM;
+		}
+
+		default:
+		{
+			return DR_WAVE_FORMAT_IEEE_FLOAT;
+		}
+	}
+}
+
 static drwav_data_format make_drwav_format(const AudioDataFormat& format)
 {
 	drwav_data_format out;
 
 	out.container = drwav_container_riff;
-	out.format = DR_WAVE_FORMAT_PCM;
+	out.format = get_storage_format(format.storage_type);
 	out.channels = format.num_channels;
 	out.sampleRate = format.sample_rate;
 	out.bitsPerSample = format.bit_depth;
@@ -55,13 +71,36 @@ static ma_format get_miniaudio_pcm_format(int bit_depth)
 	}
 }
 
+template <AudioDataFormat::StorageType TYPE>
 static drwav_uint64 drwav_write_f32_pcm_frames(drwav* wav, size_t write_size, int num_channels, const float* frames, int bit_depth)
+{
+	return drwav_write_pcm_frames(wav, write_size, frames);
+}
+
+template <>
+static drwav_uint64 drwav_write_f32_pcm_frames<AudioDataFormat::StorageType::Int>(drwav* wav, size_t write_size, int num_channels, const float* frames, int bit_depth)
 {
 	std::vector<char> buffer(size_t(bit_depth / 8) * num_channels * write_size);
 
 	ma_convert_pcm_frames_format(buffer.data(), get_miniaudio_pcm_format(bit_depth), frames, ma_format_f32, write_size, num_channels, ma_dither_mode_triangle);
 
 	return drwav_write_pcm_frames(wav, write_size, buffer.data());
+}
+
+static drwav_uint64 drwav_write_f32_pcm_frames(drwav* wav, size_t write_size, const AudioDataFormat& format, const float* frames)
+{
+	switch (format.storage_type)
+	{
+		case AudioDataFormat::StorageType::Int:
+		{
+			return drwav_write_f32_pcm_frames<AudioDataFormat::StorageType::Int>(wav, write_size, format.num_channels, frames, format.bit_depth);
+		}
+
+		default:
+		{
+			return drwav_write_f32_pcm_frames<AudioDataFormat::StorageType::Default>(wav, write_size, format.num_channels, frames, format.bit_depth);
+		}
+	}
 }
 
 static void drwav_write_frames(drwav* wav, AudioWriter::Callbacks callbacks, const AudioDataFormat& format, std::uint32_t chunk_size)
@@ -83,7 +122,7 @@ static void drwav_write_frames(drwav* wav, AudioWriter::Callbacks callbacks, con
 
 		callbacks.get_next_chunk(interleaved_frames.data(), frame, write_size);
 
-		if (drwav_write_f32_pcm_frames(wav, write_size, format.num_channels, interleaved_frames.data(), format.bit_depth) != write_size)
+		if (drwav_write_f32_pcm_frames(wav, write_size, format, interleaved_frames.data()) != write_size)
 		{
 			throw std::runtime_error("Write error");
 		}

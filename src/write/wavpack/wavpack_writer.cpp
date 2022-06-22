@@ -25,15 +25,15 @@ static void wavpack_write_file(WavpackBlockOutput blockout, void* id, const Audi
 	config.num_channels = format.num_channels;
 	config.sample_rate = format.sample_rate;
 
-	switch (format.wavpack.storage_type)
+	switch (format.storage_type)
 	{
-		case AudioDataFormat::WavpackFormat::StorageType::Float:
+		case AudioDataFormat::StorageType::Float:
 		{
 			config.float_norm_exp = UNNORMALIZED_FLOAT;
 			break;
 		}
 
-		case AudioDataFormat::WavpackFormat::StorageType::NormalizedFloat:
+		case AudioDataFormat::StorageType::NormalizedFloat:
 		{
 			config.float_norm_exp = NORMALIZED_FLOAT;
 			break;
@@ -69,10 +69,10 @@ static void wavpack_write_file(WavpackBlockOutput blockout, void* id, const Audi
 
 		callbacks.get_next_chunk(interleaved_frames.data(), frame, write_size);
 
-		switch (format.wavpack.storage_type)
+		switch (format.storage_type)
 		{
-			case AudioDataFormat::WavpackFormat::StorageType::Float:
-			case AudioDataFormat::WavpackFormat::StorageType::NormalizedFloat:
+			case AudioDataFormat::StorageType::Float:
+			case AudioDataFormat::StorageType::NormalizedFloat:
 			{
 				if (!WavpackPackSamples(context, reinterpret_cast<std::int32_t*>(interleaved_frames.data()), write_size))
 				{
@@ -82,7 +82,7 @@ static void wavpack_write_file(WavpackBlockOutput blockout, void* id, const Audi
 				break;
 			}
 
-			case AudioDataFormat::WavpackFormat::StorageType::Int:
+			case AudioDataFormat::StorageType::Int:
 			{
 				std::vector<std::int32_t> samples(size_t(write_size) * format.num_channels);
 
