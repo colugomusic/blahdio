@@ -104,6 +104,13 @@ SCENARIO("Data can be written and read back with no errors", "[wav][wavpack]")
 
 					util::write_read_compare(data.buffer.data(), blahdio::AudioType::WavPack, format);
 				}
+				
+				GIVEN("WAV storage type: float")
+				{
+					format.storage_type = blahdio::AudioDataFormat::StorageType::Float;
+
+					util::write_read_compare(data.buffer.data(), blahdio::AudioType::WAV, format);
+				}
 			}
 		}
 	}

@@ -115,6 +115,18 @@ std::string to_string(AudioType audio_type)
 	}
 }
 
+std::string to_string(blahdio::AudioDataFormat::StorageType storage_type)
+{
+	switch (storage_type)
+	{
+		case blahdio::AudioDataFormat::StorageType::Default: return "Default";
+		case blahdio::AudioDataFormat::StorageType::Int: return "Int";
+		case blahdio::AudioDataFormat::StorageType::Float: return "Float";
+		case blahdio::AudioDataFormat::StorageType::NormalizedFloat: return "NormalizedFloat";
+		default: return "Unknown";
+	}
+}
+
 std::string get_ext(AudioType audio_type)
 {
 	switch (audio_type)
@@ -135,7 +147,7 @@ void write_read_compare(
 		blahdio::AudioDataFormat format,
 		int chunk_size)
 {
-	WHEN("The data is written as a " << format.bit_depth << "-bit " << to_string(audio_type) << " @" << format.sample_rate << " file")
+	WHEN("The data is written as a " << format.bit_depth << "-bit " << to_string(audio_type) << " [" << to_string(format.storage_type) << "] @" << format.sample_rate << " file")
 	{
 		const auto test_file_name = std::string("test_") + std::to_string(format.bit_depth) + "_" + std::to_string(format.sample_rate);
 		const auto test_file_path = (std::filesystem::path(DIR_TEST_FILES) / test_file_name).replace_extension(get_ext(audio_type));

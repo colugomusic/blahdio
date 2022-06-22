@@ -30,6 +30,7 @@ extern void write_read_compare(
 		blahdio::AudioDataFormat format,
 		int chunk_size = 512);
 
+extern std::string to_string(blahdio::AudioDataFormat::StorageType storage_type);
 extern std::string to_string(blahdio::AudioType audio_type);
 extern std::string get_ext(blahdio::AudioType audio_type);
 
