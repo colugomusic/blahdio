@@ -72,13 +72,13 @@ static ma_format get_miniaudio_pcm_format(int bit_depth)
 }
 
 template <AudioDataFormat::StorageType TYPE>
-static drwav_uint64 drwav_write_f32_pcm_frames(drwav* wav, size_t write_size, int num_channels, const float* frames, int bit_depth)
+drwav_uint64 drwav_write_f32_pcm_frames(drwav* wav, size_t write_size, int num_channels, const float* frames, int bit_depth)
 {
 	return drwav_write_pcm_frames(wav, write_size, frames);
 }
 
 template <>
-static drwav_uint64 drwav_write_f32_pcm_frames<AudioDataFormat::StorageType::Int>(drwav* wav, size_t write_size, int num_channels, const float* frames, int bit_depth)
+drwav_uint64 drwav_write_f32_pcm_frames<AudioDataFormat::StorageType::Int>(drwav* wav, size_t write_size, int num_channels, const float* frames, int bit_depth)
 {
 	std::vector<char> buffer(size_t(bit_depth / 8) * num_channels * write_size);
 
