@@ -92,14 +92,14 @@ SCENARIO("Data can be written and read back with no errors", "[wav][wavpack]")
 
 				GIVEN("WavPack storage type: Normalized float")
 				{
-					format.wavpack.storage_type = blahdio::AudioDataFormat::WavpackFormat::StorageType::NormalizedFloat;
+					format.storage_type = blahdio::AudioDataFormat::StorageType::NormalizedFloat;
 
 					util::write_read_compare(data.buffer.data(), blahdio::AudioType::WavPack, format);
 				}
 
 				GIVEN("WavPack storage type: Unnormalized float")
 				{
-					format.wavpack.storage_type = blahdio::AudioDataFormat::WavpackFormat::StorageType::Float;
+					format.storage_type = blahdio::AudioDataFormat::StorageType::Float;
 
 					util::write_read_compare(data.buffer.data(), blahdio::AudioType::WavPack, format);
 				}
