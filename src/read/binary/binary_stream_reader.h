@@ -12,7 +12,7 @@ public:
 
 	StreamReader(const AudioReader::Stream& stream, int frame_size);
 
-	void read_all_frames(Callbacks callbacks, std::uint32_t chunk_size) override;
+	auto read_all_frames(Callbacks callbacks, uint32_t chunk_size) -> expected<void> override;
 
 private:
 

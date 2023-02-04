@@ -1,5 +1,8 @@
 #pragma once
 
+#include <optional>
+#include <variant>
+#include <tl/expected.hpp>
 #include "binary/binary_reader.h"
 #include "typed_read_handler.h"
 
@@ -10,51 +13,72 @@ class AudioReader
 {
 public:
 
-	AudioReader(const std::string& utf8_path, AudioType type_hint);
+	AudioReader(std::string utf8_path, AudioType type_hint);
 	AudioReader(const blahdio::AudioReader::Stream& stream, AudioType type_hint);
 	AudioReader(const void* data, std::size_t data_size, AudioType type_hint);
 
-	void set_binary_frame_size(int frame_size);
+	auto set_binary_frame_size(uint32_t frame_size) -> void;
 
-	void read_header();
-	void read_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size);
+	[[nodiscard]] auto read_header() -> expected<AudioDataFormat>;
+	[[nodiscard]] auto read_frames(blahdio::AudioReader::Callbacks callbacks, uint32_t chunk_size) -> expected<void>;
+	[[nodiscard]] auto stream_open() -> expected<AudioDataFormat>;
+	[[nodiscard]] auto stream_close() -> expected<void>;
+	[[nodiscard]] auto stream_read_frames(void* buffer, uint32_t frames_to_read) -> expected<uint32_t>;
+	[[nodiscard]] auto stream_seek(uint64_t frame) -> expected<void>;
 
-	const AudioDataFormat& get_format() const { return format_; }
-
-	AudioType get_type() const { return active_typed_handler_->type(); }
-
-	void stream_open();
-	void stream_close();
-	std::uint32_t stream_read_frames(void* buffer, std::uint32_t frames_to_read);
-	bool stream_seek(std::uint64_t frame);
+	auto get_format() const -> expected<AudioDataFormat>;
+	auto get_type() const -> expected<AudioType>;
 
 private:
 
-	read::typed::Handlers typed_handlers_;
-	std::shared_ptr<read::typed::Handler> active_typed_handler_;
-	read::binary::Handler binary_handler_;
+	struct Hints
+	{
+		AudioType type{AudioType::None};
+		uint32_t binary_frame_size{1};
+	};
 
-	AudioType type_hint_ = AudioType::None;
-	AudioDataFormat format_;
-	int binary_frame_size_ = 1;
+	struct TypedHandler
+	{
+		read::typed::Handlers handlers;
+		read::typed::Handler* active_handler{};
+		std::optional<AudioDataFormat> format{};
 
-	void make_file_handlers(const std::string& utf8_path);
-	void make_stream_handlers(const blahdio::AudioReader::Stream& stream);
-	void make_memory_handlers(const void* data, std::size_t data_size);
+		[[nodiscard]] auto get_type() const -> expected<AudioType>;
+		[[nodiscard]] auto read_header(Hints hints) -> expected<AudioDataFormat>;
+		[[nodiscard]] auto read_frames(Hints hints, blahdio::AudioReader::Callbacks callbacks, uint32_t chunk_size) -> expected<void>;
+		[[nodiscard]] auto stream_open(Hints hints) -> expected<AudioDataFormat>;
+		[[nodiscard]] auto stream_close() -> expected<void>;
+		[[nodiscard]] auto stream_read_frames(void* buffer, uint32_t frames_to_read) -> expected<uint32_t>;
+		[[nodiscard]] auto stream_seek(uint64_t frame) -> expected<void>;
+	};
 
-	void read_binary_header();
-	void read_typed_header();
-	void open_binary_stream();
-	void open_typed_stream();
-	void close_binary_stream();
-	void close_typed_stream();
-	bool seek_to_binary_frame(std::uint64_t frame);
-	bool seek_to_typed_frame(std::uint64_t frame);
+	struct BinaryHandler
+	{
+		read::binary::Handler handler;
+		std::optional<AudioDataFormat> format{};
 
-	void read_binary_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size);
-	void read_typed_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size);
-	std::uint32_t read_binary_frames(void* buffer, std::uint32_t frames_to_read);
-	std::uint32_t read_typed_frames(void* buffer, std::uint32_t frames_to_read);
+		[[nodiscard]] auto get_type() const -> expected<AudioType> { return AudioType::Binary; }
+		[[nodiscard]] auto read_header(Hints hints) -> expected<AudioDataFormat>;
+		[[nodiscard]] auto read_frames(Hints hints, blahdio::AudioReader::Callbacks callbacks, uint32_t chunk_size) -> expected<void>;
+		[[nodiscard]] auto stream_open(Hints hints) -> expected<AudioDataFormat>;
+		[[nodiscard]] auto stream_close() -> expected<void>;
+		[[nodiscard]] auto stream_read_frames(void* buffer, uint32_t frames_to_read) -> expected<uint32_t>;
+		[[nodiscard]] auto stream_seek(uint64_t frame) -> expected<void>;
+	};
+
+	using Handler = std::variant<TypedHandler, BinaryHandler>;
+
+	Hints hints_;
+	Handler handler_;
+
+	[[nodiscard]] static
+	auto make_file_handler(AudioType type_hint, std::string utf8_path) -> Handler;
+
+	[[nodiscard]] static
+	auto make_stream_handler(AudioType type_hint, const blahdio::AudioReader::Stream& stream) -> Handler;
+	
+	[[nodiscard]] static
+	auto make_memory_handler(AudioType type_hint, const void* data, size_t data_size) -> Handler;
 };
 
 } // impl

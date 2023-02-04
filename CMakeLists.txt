@@ -11,35 +11,24 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
 
 include(CPM)
 
-# Header-only libraries #########################################
+############# libraries #########################################
 if (BLAHDIO_ENABLE_FLAC OR BLAHDIO_ENABLE_MP3 OR BLAHDIO_ENABLE_WAV)
-CPMAddPackage(
-	NAME dr_libs
-	GITHUB_REPOSITORY "mackron/dr_libs"
-	GIT_TAG master
-	DOWNLOAD_ONLY YES
-)
-
-CPMAddPackage(
-	NAME miniaudio
-	GITHUB_REPOSITORY "mackron/miniaudio"
-	GIT_TAG master
-	DOWNLOAD_ONLY YES
-)
+CPMAddPackage(NAME dr_libs GITHUB_REPOSITORY "mackron/dr_libs" GIT_TAG master DOWNLOAD_ONLY YES)
+CPMAddPackage(NAME miniaudio GITHUB_REPOSITORY "mackron/miniaudio" GIT_TAG master DOWNLOAD_ONLY YES)
 endif()
 
-CPMAddPackage(
-	NAME utfcpp
-	GITHUB_REPOSITORY "nemtrif/utfcpp"
-	GIT_TAG master
-	DOWNLOAD_ONLY YES
-)
+CPMAddPackage(NAME fmt GITHUB_REPOSITORY "fmtlib/fmt" GIT_TAG 9.1.0)
+CPMAddPackage(NAME expected GITHUB_REPOSITORY "TartanLlama/expected" GIT_TAG master DOWNLOAD_ONLY YES)
+CPMAddPackage(NAME utfcpp GITHUB_REPOSITORY "nemtrif/utfcpp" GIT_TAG master DOWNLOAD_ONLY YES)
 
 list(APPEND include_dirs
 	${dr_libs_SOURCE_DIR}
+	${expected_SOURCE_DIR}/include
+	${fmt_SOURCE_DIR}/include
 	${miniaudio_SOURCE_DIR}
 	${utfcpp_SOURCE_DIR}/source
 )
+list(APPEND link_libs fmt::fmt)
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # WavPack #######################################################
@@ -49,15 +38,6 @@ if (BLAHDIO_ENABLE_WAVPACK)
 	set(WAVPACK_BUILD_PROGRAMS OFF CACHE BOOL "Build programs" FORCE)
 	set(WAVPACK_BUILD_DOCS OFF CACHE BOOL "Build documentation" FORCE)
 	set(BUILD_TESTING OFF CACHE BOOL "Build tests" FORCE)
-
-	# Disable ASM if building for arm64 (WavPack doesn't support it). I don't know
-	# how to disable this for just one architecture. I assume it's not possible
-	# because the WavPack CMakeLists fails to do it. So if we're building a fat binary
-	# it will be disabled for all architectures
-	#if (CMAKE_SYSTEM_NAME STREQUAL Darwin AND "arm64" IN_LIST CMAKE_OSX_ARCHITECTURES)
-	#	set(WAVPACK_ENABLE_ASM OFF CACHE BOOL "Enable assembly optimizations")
-	#endif()
-
 	set(BUILD_SHARED_LIBS OFF)
 	CPMAddPackage("gh:dbry/wavpack#master")
 	list(APPEND include_dirs ${wavpack_SOURCE_DIR}/include)

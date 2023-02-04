@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <functional>
 #include "blahdio/audio_data_format.h"
+#include "blahdio/expected.h"
 
 namespace blahdio {
 
@@ -38,13 +39,13 @@ public:
 		return out;
 	}
 
-	virtual void read_all_frames(Callbacks callbacks, std::uint32_t chunk_size) = 0;
+	virtual auto read_all_frames(Callbacks callbacks, uint32_t chunk_size) -> expected<void> = 0;
 
 protected:
 
 	int frame_size_ = 0;
 	int num_channels_ = 0;
-	std::uint64_t num_frames_ = 0;
+	uint64_t num_frames_ = 0;
 	int sample_rate_ = 0;
 	int bit_depth_ = 0;
 };

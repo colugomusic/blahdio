@@ -14,7 +14,7 @@ namespace dr_libs {
 
 namespace flac {
 
-drflac* open_file(const std::string& utf8_path)
+drflac* open_file(std::string_view utf8_path)
 {
 #ifdef _WIN32
 	return drflac_open_file_w((const wchar_t*)(utf8::utf8to16(utf8_path).c_str()), nullptr);
@@ -27,7 +27,7 @@ drflac* open_file(const std::string& utf8_path)
 
 namespace mp3 {
 
-bool init_file(drmp3* mp3, const std::string& utf8_path)
+bool init_file(drmp3* mp3, std::string_view utf8_path)
 {
 #ifdef _WIN32
 	return drmp3_init_file_w(mp3, (const wchar_t*)(utf8::utf8to16(utf8_path).c_str()), nullptr);
@@ -40,7 +40,7 @@ bool init_file(drmp3* mp3, const std::string& utf8_path)
 
 namespace wav {
 
-bool init_file(drwav* wav, const std::string& utf8_path)
+bool init_file(drwav* wav, std::string_view utf8_path)
 {
 #ifdef _WIN32
 	return drwav_init_file_w(wav, (const wchar_t*)(utf8::utf8to16(utf8_path).c_str()), nullptr);
@@ -49,7 +49,7 @@ bool init_file(drwav* wav, const std::string& utf8_path)
 #endif
 }
 
-bool init_file_write(drwav* wav, const std::string& utf8_path, const drwav_data_format* format)
+bool init_file_write(drwav* wav, std::string_view utf8_path, const drwav_data_format* format)
 {
 #ifdef _WIN32
 	return drwav_init_file_write_w(wav, (const wchar_t*)(utf8::utf8to16(utf8_path).c_str()), format, nullptr);
@@ -60,12 +60,12 @@ bool init_file_write(drwav* wav, const std::string& utf8_path, const drwav_data_
 
 } // wav
 
-void generic_frame_reader_loop(
+[[nodiscard]] auto generic_frame_reader_loop(
 	AudioReader::Callbacks callbacks,
 	std::function<std::uint32_t(float*, std::uint32_t)> read_func,
 	std::uint32_t chunk_size,
 	int num_channels,
-	std::uint64_t num_frames)
+	std::uint64_t num_frames) -> tl::expected<void, std::string>
 {
 	std::uint64_t frame = 0;
 
@@ -88,10 +88,15 @@ void generic_frame_reader_loop(
 		
 		callbacks.return_chunk((const void*)(interleaved_frames.data()), frame, frames_read);
 
-		if (frames_read < read_size) throw std::runtime_error("Read error");
+		if (frames_read < read_size)
+		{
+			return tl::make_unexpected("Read error");
+		}
 
 		frame += frames_read;
 	}
+
+	return {};
 }
 
 void generic_stream_reader_loop(

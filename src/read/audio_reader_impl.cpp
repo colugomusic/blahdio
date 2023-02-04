@@ -4,281 +4,260 @@
 namespace blahdio {
 namespace impl {
 
-void AudioReader::make_file_handlers(const std::string& utf8_path)
+auto AudioReader::make_file_handler(AudioType type_hint, std::string utf8_path) -> Handler
 {
-	switch (type_hint_)
+	switch (type_hint)
 	{
 		case AudioType::Binary:
 		{
-			binary_handler_ = read::binary::make_handler(utf8_path);
-			break;
+			return BinaryHandler{read::binary::make_handler(std::move(utf8_path))};
 		}
 
 		default:
 		{
-			typed_handlers_ = read::typed::make_handlers(utf8_path);
-			break;
+			return TypedHandler{read::typed::make_handlers(std::move(utf8_path))};
 		}
 	}
 }
 
-void AudioReader::make_stream_handlers(const blahdio::AudioReader::Stream& stream)
+auto AudioReader::make_stream_handler(AudioType type_hint, const blahdio::AudioReader::Stream& stream) -> Handler
 {
-	switch (type_hint_)
+	switch (type_hint)
 	{
 		case AudioType::Binary:
 		{
-			binary_handler_ = read::binary::make_handler(stream);
-			break;
+			return BinaryHandler{read::binary::make_handler(stream)};
 		}
 
 		default:
 		{
-			typed_handlers_ = read::typed::make_handlers(stream);
-			break;
+			return TypedHandler{read::typed::make_handlers(stream)};
 		}
 	}
 }
 
-void AudioReader::make_memory_handlers(const void* data, std::size_t data_size)
+auto AudioReader::make_memory_handler(AudioType type_hint, const void* data, size_t data_size) -> Handler
 {
-	switch (type_hint_)
+	switch (type_hint)
 	{
 		case AudioType::Binary:
 		{
-			binary_handler_ = read::binary::make_handler(data, data_size);
-			break;
+			return BinaryHandler{read::binary::make_handler(data, data_size)};
 		}
 
 		default:
 		{
-			typed_handlers_ = read::typed::make_handlers(data, data_size);
-			break;
+			return TypedHandler{read::typed::make_handlers(data, data_size)};
 		}
 	}
 }
 
-void AudioReader::read_binary_header()
+AudioReader::AudioReader(std::string utf8_path, AudioType type_hint)
+	: handler_{make_file_handler(type_hint, std::move(utf8_path))}
 {
-	binary_handler_.read_header(binary_frame_size_, &format_);
-}
-
-void AudioReader::read_typed_header()
-{
-	const auto type_handlers_to_try = typed_handlers_.make_type_attempt_order(type_hint_);
-
-	for (auto type_handler : type_handlers_to_try)
-	{
-		AudioDataFormat format;
-
-		if (type_handler && type_handler->try_read_header(&format))
-		{
-			active_typed_handler_ = type_handler;
-			format_ = format;
-			return;
-		}
-	}
-
-	throw std::runtime_error("File format not recognized");
-}
-
-void AudioReader::open_binary_stream()
-{
-	binary_handler_.stream_open(binary_frame_size_, &format_);
-}
-
-void AudioReader::open_typed_stream()
-{
-	const auto type_handlers_to_try = typed_handlers_.make_type_attempt_order(type_hint_);
-
-	for (auto type_handler : type_handlers_to_try)
-	{
-		AudioDataFormat format;
-
-		if (type_handler && type_handler->stream_open(&format))
-		{
-			active_typed_handler_ = type_handler;
-			format_ = format;
-			return;
-		}
-	}
-
-	throw std::runtime_error("File format not recognized");
-}
-
-void AudioReader::close_binary_stream()
-{
-	binary_handler_.stream_close();
-}
-
-void AudioReader::close_typed_stream()
-{
-	active_typed_handler_->stream_close();
-}
-
-void AudioReader::read_binary_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size)
-{
-	binary_handler_.read_frames(callbacks, binary_frame_size_, chunk_size);
-}
-
-void AudioReader::read_typed_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size)
-{
-	// If the header hasn't been read yet, read it now
-	if (!active_typed_handler_)
-	{
-		// Will throw if the audio type couldn't be deduced
-		read_typed_header();
-	}
-
-	active_typed_handler_->read_frames(callbacks, format_, chunk_size);
-}
-
-void AudioReader::stream_open()
-{
-	switch (type_hint_)
-	{
-		case AudioType::Binary:
-		{
-			open_binary_stream();
-			break;
-		}
-
-		default:
-		{
-			open_typed_stream();
-			break;
-		}
-	}
-}
-
-void AudioReader::stream_close()
-{
-	switch (type_hint_)
-	{
-		case AudioType::Binary:
-		{
-			close_binary_stream();
-			break;
-		}
-
-		default:
-		{
-			close_typed_stream();
-			break;
-		}
-	}
-}
-
-bool AudioReader::seek_to_binary_frame(std::uint64_t frame)
-{
-	// TODO: implement this
-	return false;
-}
-
-bool AudioReader::seek_to_typed_frame(std::uint64_t frame)
-{
-	return active_typed_handler_->stream_seek(frame);
-}
-
-std::uint32_t AudioReader::read_binary_frames(void* buffer, std::uint32_t frames_to_read)
-{
-	return binary_handler_.stream_read(buffer, frames_to_read);
-}
-
-std::uint32_t AudioReader::read_typed_frames(void* buffer, std::uint32_t frames_to_read)
-{
-	return active_typed_handler_->stream_read(buffer, frames_to_read);
-}
-
-AudioReader::AudioReader(const std::string& utf8_path, AudioType type_hint)
-	: type_hint_(type_hint)
-{
-	make_file_handlers(utf8_path);
 }
 
 AudioReader::AudioReader(const blahdio::AudioReader::Stream& stream, AudioType type_hint)
-	: type_hint_(type_hint)
+	: handler_{make_stream_handler(type_hint, stream)}
 {
-	make_stream_handlers(stream);
 }
 
 AudioReader::AudioReader(const void* data, std::size_t data_size, AudioType type_hint)
-	: type_hint_(type_hint)
+	: handler_{make_memory_handler(type_hint, data, data_size)}
 {
-	make_memory_handlers(data, data_size);
 }
 
-void AudioReader::set_binary_frame_size(int frame_size)
+void AudioReader::set_binary_frame_size(uint32_t frame_size)
 {
-	binary_frame_size_ = frame_size;
+	hints_.binary_frame_size = frame_size;
 }
 
-void AudioReader::read_header()
+auto AudioReader::get_format() const -> expected<AudioDataFormat>
 {
-	switch (type_hint_)
+	return std::visit([=](auto&& handler) -> expected<AudioDataFormat>
 	{
-		case AudioType::Binary:
+		if (!handler.format)
 		{
-			read_binary_header();
-			break;
+			return tl::make_unexpected("Failed to get audio data format (The header has not been read yet)");
 		}
 
-		default:
+		return *handler.format;
+	}, handler_);
+}
+
+auto AudioReader::get_type() const -> expected<AudioType>
+{
+	return std::visit([=](auto&& handler) { return handler.get_type(); }, handler_);
+}
+
+[[nodiscard]] auto AudioReader::read_header() -> expected<AudioDataFormat>
+{
+	return std::visit([=](auto&& handler) { return handler.read_header(hints_); }, handler_);
+}
+
+auto AudioReader::read_frames(blahdio::AudioReader::Callbacks callbacks, uint32_t chunk_size) -> expected<void>
+{
+	return std::visit([=](auto&& handler)
+	{
+		const auto read_header_if_not_already_read_yet = [&]() -> expected<void>
 		{
-			read_typed_header();
-			break;
+			if (!handler.format)
+			{
+				auto result{handler.read_header(hints_)};
+
+				if (!result)
+				{
+					return tl::make_unexpected(result.error());
+				}
+			}
+
+			return {};
+		};
+
+		const auto read_frames = [&]() -> expected<void>
+		{
+			return handler.read_frames(hints_, callbacks, chunk_size);
+		};
+
+		return read_header_if_not_already_read_yet().and_then(read_frames);
+	}, handler_);
+}
+
+auto AudioReader::stream_open() -> expected<AudioDataFormat>
+{
+	return std::visit([=](auto&& handler)
+	{
+		return handler.stream_open(hints_);
+	}, handler_);
+}
+
+auto AudioReader::stream_close() -> expected<void>
+{
+	return std::visit([=](auto&& handler) { return handler.stream_close(); }, handler_);
+}
+
+auto AudioReader::stream_read_frames(void* buffer, uint32_t frames_to_read) -> expected<uint32_t>
+{
+	return std::visit([=](auto&& handler) { return handler.stream_read_frames(buffer, frames_to_read); }, handler_);
+}
+
+auto AudioReader::stream_seek(uint64_t frame) -> expected<void>
+{
+	return std::visit([=](auto&& handler) { return handler.stream_seek(frame); }, handler_);
+}
+
+auto AudioReader::TypedHandler::get_type() const -> expected<AudioType>
+{
+	if (!active_handler)
+	{
+		return tl::make_unexpected("Failed to get audio type (The header has not been read yet)");
+	}
+
+	return active_handler->type();
+}
+
+auto AudioReader::TypedHandler::read_header(Hints hints) -> expected<AudioDataFormat>
+{
+	const auto type_handlers_to_try = handlers.make_type_attempt_order(hints.type);
+
+	for (auto type_handler : type_handlers_to_try)
+	{
+		auto result{type_handler->try_read_header()};
+
+		if (result)
+		{
+			active_handler = type_handler;
+			format = *result;
+			return *format;
 		}
 	}
+
+	return tl::make_unexpected("File format not recognized");
 }
 
-void AudioReader::read_frames(blahdio::AudioReader::Callbacks callbacks, std::uint32_t chunk_size)
+auto AudioReader::TypedHandler::read_frames(Hints, blahdio::AudioReader::Callbacks callbacks, uint32_t chunk_size) -> expected<void>
 {
-	switch (type_hint_)
-	{
-		case AudioType::Binary:
-		{
-			read_binary_frames(callbacks, chunk_size);
-			break;
-		}
-
-		default:
-		{
-			read_typed_frames(callbacks, chunk_size);
-			break;
-		}
-	}
+	return active_handler->read_frames(callbacks, *format, chunk_size);
 }
 
-std::uint32_t AudioReader::stream_read_frames(void* buffer, std::uint32_t frames_to_read)
+auto AudioReader::TypedHandler::stream_open(Hints hints) -> expected<AudioDataFormat>
 {
-	switch (type_hint_)
-	{
-		case AudioType::Binary:
-		{
-			return read_binary_frames(buffer, frames_to_read);
-		}
+	const auto type_handlers_to_try{handlers.make_type_attempt_order(hints.type)};
 
-		default:
+	for (auto type_handler : type_handlers_to_try)
+	{
+		auto open_result{type_handler->stream_open()};
+
+		if (open_result)
 		{
-			return read_typed_frames(buffer, frames_to_read);
+			active_handler = type_handler;
+			format = *open_result;
+			return *format;
 		}
 	}
+
+	return tl::make_unexpected("File format not recognized");
 }
 
-bool AudioReader::stream_seek(std::uint64_t frame)
+auto AudioReader::TypedHandler::stream_close() -> expected<void>
 {
-	switch (type_hint_)
-	{
-		case AudioType::Binary:
-		{
-			return seek_to_binary_frame(frame);
-		}
+	return active_handler->stream_close();
+}
 
-		default:
-		{
-			return seek_to_typed_frame(frame);
-		}
+auto AudioReader::TypedHandler::stream_read_frames(void* buffer, uint32_t frames_to_read) -> expected<uint32_t>
+{
+	return active_handler->stream_read(buffer, frames_to_read);
+}
+
+auto AudioReader::TypedHandler::stream_seek(uint64_t frame) -> expected<void>
+{
+	return active_handler->stream_seek(frame);
+}
+
+auto AudioReader::BinaryHandler::read_header(Hints hints) -> expected<AudioDataFormat>
+{
+	auto result{handler.read_header(hints.binary_frame_size)};
+
+	if (!result)
+	{
+		return tl::make_unexpected(result.error());
 	}
+
+	format = *result;
+	return *format;
+}
+
+auto AudioReader::BinaryHandler::read_frames(Hints hints, blahdio::AudioReader::Callbacks callbacks, uint32_t chunk_size) -> expected<void>
+{
+	return handler.read_frames(callbacks, hints.binary_frame_size, chunk_size);
+}
+
+auto AudioReader::BinaryHandler::stream_open(Hints hints) -> expected<AudioDataFormat>
+{
+	auto result{handler.stream_open(hints.binary_frame_size)};
+
+	if (!result)
+	{
+		return tl::make_unexpected(result.error());
+	}
+
+	format = *result;
+	return *format;
+}
+
+auto AudioReader::BinaryHandler::stream_close() -> expected<void>
+{
+	return handler.stream_close();
+}
+
+auto AudioReader::BinaryHandler::stream_read_frames(void* buffer, uint32_t frames_to_read) -> expected<uint32_t>
+{
+	return handler.stream_read(buffer, frames_to_read);
+}
+
+auto AudioReader::BinaryHandler::stream_seek(uint64_t frame) -> expected<void>
+{
+	return tl::make_unexpected("Can't seek binary data (Not implemented yet)");
 }
 
 } // impl

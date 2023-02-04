@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <memory>
+#include "blahdio/expected.h"
 
 namespace blahdio {
 
@@ -17,8 +18,8 @@ public:
 	~AudioStreamer();
 
 	// Return value < frames_to_read indicates the end of the stream
-	std::uint32_t read_frames(void* buffer, std::uint32_t frames_to_read);
-	bool seek(std::uint64_t frame);
+	auto read_frames(void* buffer, std::uint32_t frames_to_read) -> expected<uint32_t>;
+	auto seek(std::uint64_t frame) -> expected<void>;
 
 private:
 

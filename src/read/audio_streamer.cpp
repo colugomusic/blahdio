@@ -24,12 +24,12 @@ AudioStreamer::~AudioStreamer()
 	}
 }
 
-std::uint32_t AudioStreamer::read_frames(void* buffer, std::uint32_t frames_to_read)
+auto AudioStreamer::read_frames(void* buffer, uint32_t frames_to_read) -> expected<uint32_t>
 {
 	return impl_->read_frames(buffer, frames_to_read);
 }
 
-bool AudioStreamer::seek(std::uint64_t frame)
+auto AudioStreamer::seek(uint64_t frame) -> expected<void>
 {
 	return impl_->seek(frame);
 }

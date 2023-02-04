@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include <memory>
+#include "blahdio/audio_data_format.h"
+#include "blahdio/expected.h"
 
 namespace blahdio {
 namespace impl {
@@ -13,10 +15,10 @@ public:
 
 	AudioStreamer(std::shared_ptr<impl::AudioReader> reader);
 
-	std::uint32_t read_frames(void* buffer, std::uint32_t frames_to_read);
-	bool seek(std::uint64_t frame);
-	void open();
-	void close();
+	auto read_frames(void* buffer, uint32_t frames_to_read) -> expected<uint32_t>;
+	auto seek(uint64_t frame) -> expected<void>;
+	auto open() -> expected<AudioDataFormat>;
+	auto close() -> expected<void>;
 
 private:
 

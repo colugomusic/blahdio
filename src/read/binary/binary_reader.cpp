@@ -8,9 +8,9 @@ namespace blahdio {
 namespace read {
 namespace binary {
 
-void Reader::read_all_frames(Callbacks callbacks, std::uint32_t chunk_size)
+auto Reader::read_all_frames(Callbacks callbacks, uint32_t chunk_size) -> expected<void>
 {
-	std::uint64_t frame = 0;
+	uint64_t frame = 0;
 
 	while (frame < num_frames_)
 	{
@@ -20,7 +20,7 @@ void Reader::read_all_frames(Callbacks callbacks, std::uint32_t chunk_size)
 
 		if (frame + frames_to_read >= num_frames_)
 		{
-			frames_to_read = std::uint32_t(num_frames_ - frame);
+			frames_to_read = uint32_t(num_frames_ - frame);
 		}
 
 		std::vector<char> frame_data(size_t(frames_to_read) * frame_size_);
@@ -31,18 +31,20 @@ void Reader::read_all_frames(Callbacks callbacks, std::uint32_t chunk_size)
 
 		frame += frames_to_read;
 	}
+
+	return {};
 }
 
-Handler make_handler(const std::string& utf8_path)
+Handler make_handler(std::string utf8_path)
 {
-	const auto read_header = [utf8_path](int frame_size, AudioDataFormat* format)
+	const auto read_header = [utf8_path](int frame_size) -> expected<AudioDataFormat>
 	{
 		binary::FileReader reader(utf8_path, frame_size);
 
-		*format = reader.get_header_info();
+		return reader.get_header_info();
 	};
 
-	const auto read_frames = [utf8_path](blahdio::AudioReader::Callbacks callbacks, int frame_size, std::uint32_t chunk_size)
+	const auto read_frames = [utf8_path](blahdio::AudioReader::Callbacks callbacks, int frame_size, uint32_t chunk_size)
 	{
 		binary::FileReader reader(utf8_path, frame_size);
 		binary::FileReader::Callbacks reader_callbacks;
@@ -50,7 +52,7 @@ Handler make_handler(const std::string& utf8_path)
 		reader_callbacks.return_chunk = callbacks.return_chunk;
 		reader_callbacks.should_abort = callbacks.should_abort;
 
-		reader.read_all_frames(reader_callbacks, chunk_size);
+		return reader.read_all_frames(reader_callbacks, chunk_size);
 	};
 
 	return { read_header, read_frames };
@@ -58,14 +60,14 @@ Handler make_handler(const std::string& utf8_path)
 
 Handler make_handler(const AudioReader::Stream& stream)
 {
-	const auto read_header = [stream](int frame_size, AudioDataFormat* format)
+	const auto read_header = [stream](int frame_size) -> expected<AudioDataFormat>
 	{
 		binary::StreamReader reader(stream, frame_size);
 
-		*format = reader.get_header_info();
+		return reader.get_header_info();
 	};
 
-	const auto read_frames = [stream](blahdio::AudioReader::Callbacks callbacks, int frame_size, std::uint32_t chunk_size)
+	const auto read_frames = [stream](blahdio::AudioReader::Callbacks callbacks, int frame_size, uint32_t chunk_size)
 	{
 		binary::StreamReader reader(stream, frame_size);
 		binary::StreamReader::Callbacks reader_callbacks;
@@ -73,7 +75,7 @@ Handler make_handler(const AudioReader::Stream& stream)
 		reader_callbacks.return_chunk = callbacks.return_chunk;
 		reader_callbacks.should_abort = callbacks.should_abort;
 
-		reader.read_all_frames(reader_callbacks, chunk_size);
+		return reader.read_all_frames(reader_callbacks, chunk_size);
 	};
 
 	return { read_header, read_frames };
@@ -81,14 +83,14 @@ Handler make_handler(const AudioReader::Stream& stream)
 
 Handler make_handler(const void* data, std::size_t data_size)
 {
-	const auto read_header = [data, data_size](int frame_size, AudioDataFormat* format)
+	const auto read_header = [data, data_size](int frame_size) -> expected<AudioDataFormat>
 	{
 		binary::MemoryReader reader(frame_size, data, data_size);
 
-		*format = reader.get_header_info();
+		return reader.get_header_info();
 	};
 
-	const auto read_frames = [data, data_size](blahdio::AudioReader::Callbacks callbacks, int frame_size, std::uint32_t chunk_size)
+	const auto read_frames = [data, data_size](blahdio::AudioReader::Callbacks callbacks, int frame_size, uint32_t chunk_size)
 	{
 		binary::MemoryReader reader(frame_size, data, data_size);
 		binary::MemoryReader::Callbacks reader_callbacks;
@@ -96,7 +98,7 @@ Handler make_handler(const void* data, std::size_t data_size)
 		reader_callbacks.return_chunk = callbacks.return_chunk;
 		reader_callbacks.should_abort = callbacks.should_abort;
 
-		reader.read_all_frames(reader_callbacks, chunk_size);
+		return reader.read_all_frames(reader_callbacks, chunk_size);
 	};
 
 	return { read_header, read_frames };
