@@ -24,6 +24,10 @@ Blahdio is implemented using these libraries:
 
 ## Examples
 
+```
+FIXME: This documentation is now out of date as of caa79d0!!!!!!! :-) The reader interface no longer throws exceptions.
+```
+
 ### Reading audio data from a file
 
 ```c++
