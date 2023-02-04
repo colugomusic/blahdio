@@ -17,9 +17,9 @@ namespace flac {
 drflac* open_file(std::string_view utf8_path)
 {
 #ifdef _WIN32
-	return drflac_open_file_w((const wchar_t*)(utf8::utf8to16(utf8_path).c_str()), nullptr);
+	return drflac_open_file_w((const wchar_t*)(utf8::utf8to16(utf8_path).data()), nullptr);
 #else
-	return drflac_open_file(utf8_path.c_str(), nullptr);
+	return drflac_open_file(utf8_path.data(), nullptr);
 #endif
 }
 
@@ -30,9 +30,9 @@ namespace mp3 {
 bool init_file(drmp3* mp3, std::string_view utf8_path)
 {
 #ifdef _WIN32
-	return drmp3_init_file_w(mp3, (const wchar_t*)(utf8::utf8to16(utf8_path).c_str()), nullptr);
+	return drmp3_init_file_w(mp3, (const wchar_t*)(utf8::utf8to16(utf8_path).data()), nullptr);
 #else
-	return drmp3_init_file(mp3, utf8_path.c_str(), nullptr);
+	return drmp3_init_file(mp3, utf8_path.data(), nullptr);
 #endif
 }
 
@@ -43,18 +43,18 @@ namespace wav {
 bool init_file(drwav* wav, std::string_view utf8_path)
 {
 #ifdef _WIN32
-	return drwav_init_file_w(wav, (const wchar_t*)(utf8::utf8to16(utf8_path).c_str()), nullptr);
+	return drwav_init_file_w(wav, (const wchar_t*)(utf8::utf8to16(utf8_path).data()), nullptr);
 #else
-	return drwav_init_file(wav, utf8_path.c_str(), nullptr);
+	return drwav_init_file(wav, utf8_path.data(), nullptr);
 #endif
 }
 
 bool init_file_write(drwav* wav, std::string_view utf8_path, const drwav_data_format* format)
 {
 #ifdef _WIN32
-	return drwav_init_file_write_w(wav, (const wchar_t*)(utf8::utf8to16(utf8_path).c_str()), format, nullptr);
+	return drwav_init_file_write_w(wav, (const wchar_t*)(utf8::utf8to16(utf8_path).data()), format, nullptr);
 #else
-	return drwav_init_file_write(wav, utf8_path.c_str(), format, nullptr);
+	return drwav_init_file_write(wav, utf8_path.data(), format, nullptr);
 #endif
 }
 
