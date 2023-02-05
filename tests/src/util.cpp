@@ -69,12 +69,14 @@ void read_frames(
 {
 	AudioReader reader(file_path.string(), audio_type_expected);
 
-	reader.read_header();
+	const auto format{reader.read_header()};
 
-	const auto num_frames = reader.get_num_frames();
-	const auto num_channels = reader.get_num_channels();
-	const auto sample_rate = reader.get_sample_rate();
-	const auto bit_depth = reader.get_bit_depth();
+	REQUIRE (format);
+
+	const auto num_frames = format->num_frames;
+	const auto num_channels = format->num_channels;
+	const auto sample_rate = format->sample_rate;
+	const auto bit_depth = format->bit_depth;
 	const auto audio_type = reader.get_type();
 
 	REQUIRE(num_frames == format_expected.num_frames);
@@ -98,7 +100,9 @@ void read_frames(
 		}
 	};
 
-	reader.read_frames(reader_callbacks, chunk_size);
+	const auto result{reader.read_frames(reader_callbacks, chunk_size)};
+
+	REQUIRE(result);
 }
 
 std::string to_string(AudioType audio_type)
