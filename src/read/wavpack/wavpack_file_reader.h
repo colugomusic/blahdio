@@ -15,7 +15,7 @@ class FileReader : public Reader
 
 public:
 
-	FileReader(const std::string& utf8_path);
+	FileReader(std::string utf8_path);
 };
 
 }}}

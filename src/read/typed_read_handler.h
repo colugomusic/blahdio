@@ -117,7 +117,7 @@ struct Handlers
 	auto make_type_attempt_order(AudioType type) -> std::vector<Handler*>;
 };
 
-extern auto make_handlers(const std::string& utf8_path) -> Handlers;
+extern auto make_handlers(std::string utf8_path) -> Handlers;
 extern auto make_handlers(const AudioReader::Stream& stream) -> Handlers;
 extern auto make_handlers(const void* data, std::size_t data_size) -> Handlers;
 

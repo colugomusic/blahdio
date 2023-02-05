@@ -185,6 +185,11 @@ struct WavPackHandler
 
 		const auto get_header_info = [=]() -> expected<AudioDataFormat>
 		{
+			if (!stream_->try_read_header())
+			{
+				return tl::make_unexpected("Failed to read WavPack header");
+			}
+
 			return stream_->get_header_info();
 		};
 
@@ -235,9 +240,9 @@ private:
 	std::shared_ptr<Reader> stream_;
 };
 
-auto make_handler(const std::string& utf8_path) -> typed::Handler
+auto make_handler(std::string utf8_path) -> typed::Handler
 {
-	auto open_fn = [utf8_path]
+	auto open_fn = [utf8_path = std::move(utf8_path)]
 	{
 		return std::make_shared<wavpack::FileReader>(utf8_path);
 	};

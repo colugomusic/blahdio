@@ -1,17 +1,20 @@
 #include "wavpack_file_reader.h"
+#include <cassert>
 #include <wavpack.h>
 
 namespace blahdio {
 namespace read {
 namespace wavpack {
 
-FileReader::FileReader(const std::string& utf8_path)
-	: utf8_path_(utf8_path)
+FileReader::FileReader(std::string utf8_path)
+	: utf8_path_(std::move(utf8_path))
 {
 }
 
 WavpackContext* FileReader::open()
 {
+	assert (!utf8_path_.empty());
+
 	int flags = 0;
 
 	flags |= OPEN_2CH_MAX;

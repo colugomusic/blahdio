@@ -246,7 +246,7 @@ private:
 	std::optional<MP3> stream_;
 };
 
-auto make_handler(const std::string& utf8_path) -> typed::Handler
+auto make_handler(std::string utf8_path) -> typed::Handler
 {
 	auto open_fn = [utf8_path]
 	{

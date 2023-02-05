@@ -46,11 +46,11 @@ SCENARIO("Data can be written and read back with no errors", "[wav][wavpack]")
 	const Data DATA[] =
 	{
 		{
-			"256 frames of 2-channel sine data",
+			"2-channel sine data",
 			util::generate_sine_data(NUM_FRAMES, NUM_CHANNELS, 256.0f),
 		},
 		{
-			"256 frames of 2-channel noise data",
+			"2-channel noise data",
 			util::generate_noise_data(NUM_FRAMES, NUM_CHANNELS),
 		},
 	};

@@ -55,16 +55,19 @@ auto AudioReader::make_memory_handler(AudioType type_hint, const void* data, siz
 AudioReader::AudioReader(std::string utf8_path, AudioType type_hint)
 	: handler_{make_file_handler(type_hint, std::move(utf8_path))}
 {
+	hints_.type = type_hint;
 }
 
 AudioReader::AudioReader(const blahdio::AudioReader::Stream& stream, AudioType type_hint)
 	: handler_{make_stream_handler(type_hint, stream)}
 {
+	hints_.type = type_hint;
 }
 
 AudioReader::AudioReader(const void* data, std::size_t data_size, AudioType type_hint)
 	: handler_{make_memory_handler(type_hint, data, data_size)}
 {
+	hints_.type = type_hint;
 }
 
 void AudioReader::set_binary_frame_size(uint32_t frame_size)

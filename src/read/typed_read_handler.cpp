@@ -21,10 +21,7 @@ namespace blahdio {
 namespace read {
 namespace typed {
 
-extern auto make_handlers(const std::string& utf8_path) -> Handlers;
-extern auto make_handlers(const void* data, std::size_t data_size) -> Handlers;
-
-auto make_handlers(const std::string& utf8_path) -> Handlers
+auto make_handlers(std::string utf8_path) -> Handlers
 {
 	return
 	{
