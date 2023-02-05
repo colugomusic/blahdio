@@ -137,6 +137,11 @@ struct WavPackHandler
 	{
 		const auto get_header_info = [=](std::shared_ptr<Reader> reader) -> expected<AudioDataFormat>
 		{
+			if (!reader->try_read_header())
+			{
+				return tl::make_unexpected("Failed to read WavPack header");
+			}
+
 			return reader->get_header_info();
 		};
 
