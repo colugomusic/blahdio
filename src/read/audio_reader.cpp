@@ -3,17 +3,17 @@
 
 namespace blahdio {
 
-AudioReader::AudioReader(std::string utf8_path, AudioType type_hint)
+AudioReader::AudioReader(std::string utf8_path, AudioTypeHint type_hint)
 	: impl_(std::make_shared<impl::AudioReader>(std::move(utf8_path), type_hint))
 {
 }
 
-AudioReader::AudioReader(const void* data, size_t data_size, AudioType type_hint)
+AudioReader::AudioReader(const void* data, size_t data_size, AudioTypeHint type_hint)
 	: impl_(std::make_shared<impl::AudioReader>(data, data_size, type_hint))
 {
 }
 
-AudioReader::AudioReader(const blahdio::AudioReader::Stream& stream, AudioType type_hint) 
+AudioReader::AudioReader(const blahdio::AudioReader::Stream& stream, AudioTypeHint type_hint) 
 	: impl_(std::make_shared<impl::AudioReader>(stream, type_hint))
 {
 }

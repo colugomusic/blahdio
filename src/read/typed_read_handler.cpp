@@ -1,3 +1,4 @@
+#include <cassert>
 #include <stdexcept>
 #include "typed_read_handler.h"
 
@@ -87,50 +88,35 @@ auto make_handlers(const void* data, size_t data_size) -> Handlers
 	};
 }
 
-static auto make_default_attempt_order(Handlers* handlers) -> std::vector<typed::Handler*>
-{
-	std::vector<typed::Handler*> out;
-
-#	if BLAHDIO_ENABLE_WAV
-		out.push_back(&handlers->wav);
-#	endif
-
-#	if BLAHDIO_ENABLE_MP3
-		out.push_back(&handlers->mp3);
-#	endif
-
-#	if BLAHDIO_ENABLE_FLAC
-		out.push_back(&handlers->flac);
-#	endif
-
-#	if BLAHDIO_ENABLE_WAVPACK
-		out.push_back(&handlers->wavpack);
-#	endif
-
-	return out;
-}
-
-auto Handlers::make_type_attempt_order(AudioType type_hint) -> std::vector<typed::Handler*>
+auto Handlers::make_type_attempt_order(AudioTypeHint type_hint) -> std::vector<typed::Handler*>
 {
 	switch (type_hint)
 	{
 #		if BLAHDIO_ENABLE_FLAC
-			case AudioType::FLAC: return read::flac::make_attempt_order(this);
+			case AudioTypeHint::try_flac_first: return read::flac::make_attempt_order(this);
+			case AudioTypeHint::try_flac_only: return { &flac };
 #		endif
 
 #		if BLAHDIO_ENABLE_MP3
-			case AudioType::MP3: return read::mp3::make_attempt_order(this);
+			case AudioTypeHint::try_mp3_first: return read::mp3::make_attempt_order(this);
+			case AudioTypeHint::try_mp3_only: return { &mp3 };
 #		endif
 
 #		if BLAHDIO_ENABLE_WAV
-			case AudioType::WAV: return read::wav::make_attempt_order(this);
+			case AudioTypeHint::try_wav_first: return read::wav::make_attempt_order(this);
+			case AudioTypeHint::try_wav_only: return { &wav };
 #		endif
 
 #		if BLAHDIO_ENABLE_WAVPACK
-			case AudioType::WavPack: return read::wavpack::make_attempt_order(this);
+			case AudioTypeHint::try_wavpack_first: return read::wavpack::make_attempt_order(this);
+			case AudioTypeHint::try_wavpack_only: return { &wavpack };
 #		endif
 
-		default: return make_default_attempt_order(this);
+		default:
+		{
+			assert (false);
+			return {};
+		}
 	}
 }
 

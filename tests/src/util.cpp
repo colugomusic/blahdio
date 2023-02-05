@@ -3,6 +3,7 @@
 #include <catch2/catch.hpp>
 #include <blahdio/audio_reader.h>
 #include <blahdio/audio_writer.h>
+#include <blahdio/library_info.h>
 
 using namespace blahdio;
 
@@ -67,7 +68,11 @@ void read_frames(
 		AudioDataFormat format_expected,
 		int chunk_size)
 {
-	AudioReader reader(file_path.string(), audio_type_expected);
+	const auto type_hint{blahdio::type_hint_for_type(audio_type_expected, false)};
+
+	assert (type_hint);
+
+	AudioReader reader(file_path.string(), *type_hint);
 
 	const auto format{reader.read_header()};
 
@@ -105,21 +110,21 @@ void read_frames(
 	REQUIRE(result);
 }
 
-std::string to_string(AudioType audio_type)
+auto to_string(AudioType audio_type) -> std::string_view
 {
 	switch (audio_type)
 	{
-		case AudioType::None: return "None";
-		case AudioType::Binary: return "Binary";
-		case AudioType::FLAC: return "FLAC";
-		case AudioType::MP3: return "MP3";
-		case AudioType::WAV: return "WAV";
-		case AudioType::WavPack: return "WavPack";
+		case AudioType::none: return "None";
+		case AudioType::binary: return "Binary";
+		case AudioType::flac: return "FLAC";
+		case AudioType::mp3: return "MP3";
+		case AudioType::wav: return "WAV";
+		case AudioType::wavpack: return "WavPack";
 		default: return "Unknown";
 	}
 }
 
-std::string to_string(blahdio::AudioDataFormat::StorageType storage_type)
+auto to_string(blahdio::AudioDataFormat::StorageType storage_type) -> std::string_view
 {
 	switch (storage_type)
 	{
@@ -131,17 +136,23 @@ std::string to_string(blahdio::AudioDataFormat::StorageType storage_type)
 	}
 }
 
-std::string get_ext(AudioType audio_type)
+auto get_ext(AudioType audio_type) -> std::string_view
 {
 	switch (audio_type)
 	{
-		case AudioType::None: return "";
-		case AudioType::Binary: return "bin";
-		case AudioType::FLAC: return "flac";
-		case AudioType::MP3: return "mp3";
-		case AudioType::WAV: return "wav";
-		case AudioType::WavPack: return "wv";
-		default: return "Unknown";
+		case AudioType::none: return "";
+		case AudioType::binary: return "bin";
+		default:
+		{
+			const auto ext{blahdio::get_file_extension(audio_type)};
+
+			if (ext.empty())
+			{
+				return "Unknown";
+			}
+
+			return ext;
+		}
 	}
 }
 

@@ -114,7 +114,7 @@ struct Handlers
 		Handler wavpack;
 #	endif
 
-	auto make_type_attempt_order(AudioType type) -> std::vector<Handler*>;
+	auto make_type_attempt_order(AudioTypeHint type) -> std::vector<Handler*>;
 };
 
 extern auto make_handlers(std::string utf8_path) -> Handlers;

@@ -146,7 +146,7 @@ struct MP3Handler
 
 	MP3Handler(OpenFn open_fn) : open_fn_{open_fn} {}
 
-	auto type() const -> AudioType { return AudioType::MP3; }
+	auto type() const -> AudioType { return AudioType::mp3; }
 
 	[[nodiscard]]
 	auto try_read_header() -> expected<AudioDataFormat>

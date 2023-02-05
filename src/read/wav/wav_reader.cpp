@@ -144,7 +144,7 @@ struct WavHandler
 
 	WavHandler(OpenFn open_fn) : open_fn_{open_fn} {}
 
-	auto type() const -> AudioType { return AudioType::WAV; }
+	auto type() const -> AudioType { return AudioType::wav; }
 
 	auto try_read_header() -> expected<AudioDataFormat>
 	{

@@ -9,8 +9,8 @@ SCENARIO("Data can be written and read back with no errors", "[wav][wavpack]")
 
 	static constexpr blahdio::AudioType AUDIO_TYPES[] =
 	{
-		blahdio::AudioType::WAV,
-		blahdio::AudioType::WavPack,
+		blahdio::AudioType::wav,
+		blahdio::AudioType::wavpack,
 	};
 
 	static constexpr int SAMPLE_RATES[] =
@@ -95,21 +95,21 @@ SCENARIO("Data can be written and read back with no errors", "[wav][wavpack]")
 				{
 					format.storage_type = blahdio::AudioDataFormat::StorageType::NormalizedFloat;
 
-					util::write_read_compare(data.buffer.data(), blahdio::AudioType::WavPack, format);
+					util::write_read_compare(data.buffer.data(), blahdio::AudioType::wavpack, format);
 				}
 
 				GIVEN("WavPack storage type: Unnormalized float")
 				{
 					format.storage_type = blahdio::AudioDataFormat::StorageType::Float;
 
-					util::write_read_compare(data.buffer.data(), blahdio::AudioType::WavPack, format);
+					util::write_read_compare(data.buffer.data(), blahdio::AudioType::wavpack, format);
 				}
 				
 				GIVEN("WAV storage type: float")
 				{
 					format.storage_type = blahdio::AudioDataFormat::StorageType::Float;
 
-					util::write_read_compare(data.buffer.data(), blahdio::AudioType::WAV, format);
+					util::write_read_compare(data.buffer.data(), blahdio::AudioType::wav, format);
 				}
 			}
 		}

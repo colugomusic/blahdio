@@ -19,11 +19,11 @@ Handler make_handler(const AudioWriter::Stream& stream, AudioType type, const Au
 	switch (type)
 	{
 #		if BLAHDIO_ENABLE_WAV
-			case AudioType::WAV: return write::wav::make_handler(stream, format);
+			case AudioType::wav: return write::wav::make_handler(stream, format);
 #		endif
 
 #		if BLAHDIO_ENABLE_WAVPACK
-			case AudioType::WavPack: return write::wavpack::make_handler(stream, format);
+			case AudioType::wavpack: return write::wavpack::make_handler(stream, format);
 #		endif
 
 		default: throw std::runtime_error("Couldn't find writer");
@@ -35,11 +35,11 @@ Handler make_handler(const std::string& utf8_path, AudioType type, const AudioDa
 	switch (type)
 	{
 #		if BLAHDIO_ENABLE_WAV
-			case AudioType::WAV: return write::wav::make_handler(utf8_path, format);
+			case AudioType::wav: return write::wav::make_handler(utf8_path, format);
 #		endif
 
 #		if BLAHDIO_ENABLE_WAVPACK
-			case AudioType::WavPack: return write::wavpack::make_handler(utf8_path, format);
+			case AudioType::wavpack: return write::wavpack::make_handler(utf8_path, format);
 #		endif
 
 		default: throw std::runtime_error("Couldn't find writer");

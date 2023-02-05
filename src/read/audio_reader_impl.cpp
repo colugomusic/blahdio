@@ -4,11 +4,11 @@
 namespace blahdio {
 namespace impl {
 
-auto AudioReader::make_file_handler(AudioType type_hint, std::string utf8_path) -> Handler
+auto AudioReader::make_file_handler(AudioTypeHint type_hint, std::string utf8_path) -> Handler
 {
 	switch (type_hint)
 	{
-		case AudioType::Binary:
+		case AudioTypeHint::binary:
 		{
 			return BinaryHandler{read::binary::make_handler(std::move(utf8_path))};
 		}
@@ -20,11 +20,11 @@ auto AudioReader::make_file_handler(AudioType type_hint, std::string utf8_path) 
 	}
 }
 
-auto AudioReader::make_stream_handler(AudioType type_hint, const blahdio::AudioReader::Stream& stream) -> Handler
+auto AudioReader::make_stream_handler(AudioTypeHint type_hint, const blahdio::AudioReader::Stream& stream) -> Handler
 {
 	switch (type_hint)
 	{
-		case AudioType::Binary:
+		case AudioTypeHint::binary:
 		{
 			return BinaryHandler{read::binary::make_handler(stream)};
 		}
@@ -36,11 +36,11 @@ auto AudioReader::make_stream_handler(AudioType type_hint, const blahdio::AudioR
 	}
 }
 
-auto AudioReader::make_memory_handler(AudioType type_hint, const void* data, size_t data_size) -> Handler
+auto AudioReader::make_memory_handler(AudioTypeHint type_hint, const void* data, size_t data_size) -> Handler
 {
 	switch (type_hint)
 	{
-		case AudioType::Binary:
+		case AudioTypeHint::binary:
 		{
 			return BinaryHandler{read::binary::make_handler(data, data_size)};
 		}
@@ -52,19 +52,19 @@ auto AudioReader::make_memory_handler(AudioType type_hint, const void* data, siz
 	}
 }
 
-AudioReader::AudioReader(std::string utf8_path, AudioType type_hint)
+AudioReader::AudioReader(std::string utf8_path, AudioTypeHint type_hint)
 	: handler_{make_file_handler(type_hint, std::move(utf8_path))}
 {
 	hints_.type = type_hint;
 }
 
-AudioReader::AudioReader(const blahdio::AudioReader::Stream& stream, AudioType type_hint)
+AudioReader::AudioReader(const blahdio::AudioReader::Stream& stream, AudioTypeHint type_hint)
 	: handler_{make_stream_handler(type_hint, stream)}
 {
 	hints_.type = type_hint;
 }
 
-AudioReader::AudioReader(const void* data, std::size_t data_size, AudioType type_hint)
+AudioReader::AudioReader(const void* data, std::size_t data_size, AudioTypeHint type_hint)
 	: handler_{make_memory_handler(type_hint, data, data_size)}
 {
 	hints_.type = type_hint;

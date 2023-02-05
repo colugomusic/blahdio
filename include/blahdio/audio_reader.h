@@ -40,20 +40,14 @@ public:
 		ReadBytesFunc read_bytes;
 	};
 	
-	// The reader will always read untyped binary data if type_hint == AudioType::Binary.
-	// Otherwise each audio type will be tried, starting with type_hint first.
-	
-	// AudioType::Binary will never be deduced automatically, it must
-	// be explicitly set here.
-
 	// Read from file
-	AudioReader(std::string utf8_path, AudioType type_hint = AudioType::None);
+	AudioReader(std::string utf8_path, AudioTypeHint type_hint);
 
 	// Read from stream
-	AudioReader(const Stream& stream, AudioType type_hint = AudioType::None);
+	AudioReader(const Stream& stream, AudioTypeHint type_hint);
 
 	// Read from memory
-	AudioReader(const void* data, size_t data_size, AudioType type_hint = AudioType::None);
+	AudioReader(const void* data, size_t data_size, AudioTypeHint type_hint);
 
 	// Size in bytes of each frame to return when reading AudioType::Binary data
 	auto set_binary_frame_size(int frame_size) -> void;

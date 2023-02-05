@@ -1,10 +1,22 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include <array>
+#include <filesystem>
+#include "expected.h"
+#include "audio_type.h"
 
 namespace blahdio {
 
-extern std::vector<std::string> known_file_extensions();
+[[nodiscard]] extern constexpr
+auto get_file_extension(AudioType type) -> std::string_view;
 
-}
+[[nodiscard]] extern
+auto known_file_extensions() -> std::vector<std::string_view>;
+
+[[nodiscard]] extern
+auto type_hint_for_file(std::filesystem::path file_path, bool try_all_supported_types) -> expected<AudioTypeHint>;
+
+[[nodiscard]] extern
+auto type_hint_for_type(AudioType type, bool try_all_supported_types) -> expected<AudioTypeHint>;
+
+} // blahdio

@@ -30,9 +30,9 @@ extern void write_read_compare(
 		blahdio::AudioDataFormat format,
 		int chunk_size = 512);
 
-extern std::string to_string(blahdio::AudioDataFormat::StorageType storage_type);
-extern std::string to_string(blahdio::AudioType audio_type);
-extern std::string get_ext(blahdio::AudioType audio_type);
+extern auto to_string(blahdio::AudioDataFormat::StorageType storage_type) -> std::string_view;
+extern auto to_string(blahdio::AudioType audio_type) -> std::string_view;
+extern auto get_ext(blahdio::AudioType audio_type) -> std::string_view;
 
 extern std::vector<float> generate_sine_data(int num_frames, int num_channels, float frequency, int sample_rate = 44100);
 extern std::vector<float> generate_noise_data(int num_frames, int num_channels);

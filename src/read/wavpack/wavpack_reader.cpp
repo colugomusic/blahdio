@@ -131,7 +131,7 @@ struct WavPackHandler
 
 	WavPackHandler(OpenFn open_fn) : open_fn_{open_fn} {}
 
-	auto type() const -> AudioType { return AudioType::WavPack; }
+	auto type() const -> AudioType { return AudioType::wavpack; }
 
 	auto try_read_header() -> expected<AudioDataFormat>
 	{
