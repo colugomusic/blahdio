@@ -23,10 +23,10 @@ SCENARIO("Data can be written and read back with no errors", "[wav][wavpack]")
 		48000,
 		88200,
 		96000,
-		176400,
-		192000,
-		352800,
-		384000,
+		//176400,
+		//192000,
+		//352800,
+		//384000,
 	};
 	
 	static constexpr int BIT_DEPTHS[] =

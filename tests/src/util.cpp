@@ -67,6 +67,10 @@ void read_frames(
 		AudioDataFormat format_expected,
 		int chunk_size)
 {
+	if (audio_type_expected == AudioType::WavPack && format_expected.sample_rate == 22050)
+	{
+		int x= 0;
+	}
 	AudioReader reader(file_path.string(), audio_type_expected);
 
 	const auto format{reader.read_header()};
