@@ -30,7 +30,7 @@ Blahdio is implemented using these libraries:
 ### Reading audio data from a file
 
 ```c++
-#include <blahdio/audio_reader.h>++
+#include <blahdio/audio_reader.h>
 #include <blahdio/library_info.h>
 
 ...
