@@ -7,7 +7,7 @@
 
 namespace blahdio {
 
-[[nodiscard]] extern constexpr
+[[nodiscard]] extern
 auto get_file_extension(AudioType type) -> std::string_view;
 
 [[nodiscard]] extern

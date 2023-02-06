@@ -48,7 +48,7 @@ static constexpr Table TABLE =
 	{ AudioType::wavpack, "WV"sv,   AudioTypeHint::try_wavpack_first, AudioTypeHint::try_wavpack_only }
 }};
 
-[[nodiscard]] constexpr
+[[nodiscard]]
 auto get_file_extension(AudioType type) -> std::string_view
 {
 	const auto pos{find(TABLE, type)};
