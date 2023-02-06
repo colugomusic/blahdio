@@ -22,6 +22,8 @@ Blahdio is implemented using these libraries:
 - https://github.com/mackron/miniaudio
 - https://github.com/dbry/WavPack
 - https://github.com/nemtrif/utfcpp
+- https://github.com/TartanLlama/expected
+- https://github.com/fmtlib/fmt
 
 ## Examples
 
