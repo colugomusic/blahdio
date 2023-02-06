@@ -24,29 +24,49 @@ Blahdio is implemented using these libraries:
 
 ## Examples
 
-```
-FIXME: This documentation is now out of date as of caa79d0!!!!!!! :-) The reader interface no longer throws exceptions.
-```
-
 ### Reading audio data from a file
 
 ```c++
-#include <blahdio/audio_reader.h>
+#include <blahdio/audio_reader.h>++
+#include <blahdio/library_info.h>
 
 ...
 
-// Assume that the file type is WAV. Blahdio will try that first, but if it fails
-// to read a valid WAV header it will also try MP3, FLAC and WavPack.
-blahdio::AudioReader reader(utf8_file_path, blahdio::AudioType::WAV);
+// Generate a type hint from the file name. This is just looking at the
+// file extension to deduce what the file's type is. The file extension
+// could be wrong so this is only a hint for which file type to try first
+// when reading the file header.
+// 
+// If the second argument is set to false, only the type deduced from the
+// file extension will be tried. If it's set to true, every supported file
+// type will be tried until we successfully read a valid header, but we will
+// start with the type deduced from the file extension.
+auto type_hint = blahdio::type_hint_for_file(utf8_file_path, true)};
+
+if (!type_hint)
+{
+  // Failed to deduce the type hint from the file extension.
+  // Let's just fall back to WAV
+  type_hint = blahdio::AudioTypeHint::wav;
+}
+
+// Create the reader
+blahdio::AudioReader reader(utf8_file_path, type_hint);
 
 // Read the header. 
-reader.read_header(); // Will throw an exception if the file
-                      // type couldn't be deduced.
+const auto format = reader.read_header();
 
-const auto num_frames = reader.get_num_frames();
-const auto num_channels = reader.get_num_channels();
-const auto sample_rate = reader.get_sample_rate();
-const auto bit_depth = reader.get_bit_depth();
+if (!format)
+{
+  // Failed to read the header.
+  print_error_string(format.error());
+  return;
+}
+
+const auto num_frames = format->num_frames;
+const auto num_channels = format->num_channels;
+const auto sample_rate = format->sample_rate;
+const auto bit_depth = format->bit_depth;
 
 blahdio::AudioReader::Callbacks reader_callbacks;
 
@@ -79,9 +99,17 @@ reader_callbacks.return_chunk = [](const void* data, std::uint64_t frame, std::u
   //              the chunk size if this is the final chunk.
 };
 
-// Read file 512 frames at a time
-reader.read_frames(reader_callbacks, 512); // Will throw an exception if an error
-                                           // occurs during reading
+// Read file 512 frames at a time.
+// Note if we didn't already call read_header() at least once, it will
+// automatically be read at this point.
+const auto result = reader.read_frames(reader_callbacks, 512);
+
+if (!result)
+{
+  // An error occurred.
+  print_error_string(result.error());
+}
+
 ```
 
 ### Writing audio data to a file
