@@ -43,9 +43,9 @@ auto AudioReader::get_type() const -> expected<AudioType>
 	return impl_->get_type();
 }
 
-auto AudioReader::streamer() -> std::shared_ptr<AudioStreamer>
+auto AudioReader::streamer() -> AudioStreamer
 {
-	return std::make_shared<AudioStreamer>(impl_);
+	return {impl_};
 }
 
 } // blahdio

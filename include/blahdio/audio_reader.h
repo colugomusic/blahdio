@@ -53,7 +53,7 @@ public:
 	auto set_binary_frame_size(int frame_size) -> void;
 
 	// Create a streamer
-	[[nodiscard]] auto streamer() -> std::shared_ptr<AudioStreamer>;
+	[[nodiscard]] auto streamer() -> AudioStreamer;
 
 	// Just read the header
 	[[nodiscard]] auto read_header() -> expected<AudioDataFormat>;

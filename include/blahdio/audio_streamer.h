@@ -12,9 +12,10 @@ class AudioStreamer
 {
 public:
 
+	AudioStreamer();
+	AudioStreamer(AudioStreamer&&);
+	auto operator=(AudioStreamer&&) -> AudioStreamer&;
 	AudioStreamer(std::shared_ptr<impl::AudioReader> reader);
-	AudioStreamer(const AudioStreamer&) = delete;
-	AudioStreamer(AudioStreamer&& rhs) noexcept;
 	~AudioStreamer();
 
 	// Return value < frames_to_read indicates the end of the stream
@@ -23,7 +24,7 @@ public:
 
 private:
 
-	impl::AudioStreamer* impl_;
+	std::unique_ptr<impl::AudioStreamer> impl_;
 };
 
 }
