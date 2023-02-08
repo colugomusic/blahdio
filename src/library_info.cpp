@@ -85,9 +85,9 @@ auto type_hint_for_file(std::filesystem::path file_path, bool try_all_supported_
 		return str;
 	};
 
-	const auto ext{file_path.extension().string()};
+	const auto ext{file_path.extension().string().substr(1)};
 	const auto upper_ext{toupper(ext)};
-	const auto pos{find(TABLE, std::string_view{ext})};
+	const auto pos{find(TABLE, std::string_view{upper_ext})};
 
 	if (pos == TABLE.end())
 	{

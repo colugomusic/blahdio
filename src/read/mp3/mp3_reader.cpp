@@ -12,65 +12,70 @@ struct MP3
 {
 	MP3() = delete;
 	MP3(const MP3&) = delete;
+	MP3(MP3&& rhs) noexcept = default;
 	auto operator=(const MP3&&) -> MP3& = delete;
 
-	MP3(MP3&& rhs) : mp3_{rhs.mp3_}, header_{rhs.header_} { rhs.mp3_ = std::nullopt; }
-	auto operator=(MP3&& rhs) -> MP3& { mp3_ = rhs.mp3_; rhs.mp3_ = std::nullopt; return *this; }
+	auto operator=(MP3&& rhs) noexcept -> MP3&
+	{
+		mp3_ = std::move(rhs.mp3_);
+		header_ = rhs.header_;
+		return *this;
+	}
 
 	~MP3()
 	{
 		if (mp3_)
 		{
-			drmp3_uninit(&mp3_.value());
+			drmp3_uninit(mp3_.get());
 		}
 	}
 
-	operator bool() const { return mp3_.has_value(); }
-	operator drmp3*() { return &mp3_.value(); }
+	operator bool() const { return bool(mp3_); }
+	operator drmp3*() { return mp3_.get(); }
 	auto get_header_info() const { return header_; }
 
 	[[nodiscard]] static
 	auto file(std::string_view utf8_path) -> expected<MP3>
 	{
-		drmp3 mp3;
+		auto mp3{std::make_unique<drmp3>()};
 
-		if (!dr_libs::mp3::init_file(&mp3, utf8_path))
+		if (!dr_libs::mp3::init_file(mp3.get(), utf8_path))
 		{
 			return tl::make_unexpected(fmt::format("Failed to open MP3 decoder for file: '{}'", utf8_path));
 		}
 
-		return MP3{mp3};
+		return MP3{std::move(mp3)};
 	}
 
 	[[nodiscard]] static
 	auto memory(const void* data, size_t data_size) -> expected<MP3>
 	{
-		drmp3 mp3;
+		auto mp3{std::make_unique<drmp3>()};
 
-		if (!drmp3_init_memory(&mp3, data, data_size, nullptr))
+		if (!drmp3_init_memory(mp3.get(), data, data_size, nullptr))
 		{
 			return tl::make_unexpected("Failed to open MP3 decoder for memory");
 		}
 
-		return MP3{mp3};
+		return MP3{std::move(mp3)};
 	}
 
 	[[nodiscard]] static
 	auto stream(drmp3_read_proc on_read, drmp3_seek_proc on_seek, void* user_data) -> expected<MP3>
 	{
-		drmp3 mp3;
+		auto mp3{std::make_unique<drmp3>()};
 
-		if (!drmp3_init(&mp3, on_read, on_seek, user_data, nullptr))
+		if (!drmp3_init(mp3.get(), on_read, on_seek, user_data, nullptr))
 		{
 			return tl::make_unexpected("Failed to open MP3 decoder for stream");
 		}
 		
-		return MP3{mp3};
+		return MP3{std::move(mp3)};
 	}
 
 private:
 
-	MP3(drmp3 mp3) : mp3_{mp3}, header_{get_header_info(&mp3)} {}
+	MP3(std::unique_ptr<drmp3> mp3) : mp3_{std::move(mp3)}, header_{get_header_info(mp3.get())} {}
 
 	[[nodiscard]] static
 	auto get_header_info(drmp3* mp3) -> AudioDataFormat
@@ -88,7 +93,7 @@ private:
 		return out;
 	}
 
-	std::optional<drmp3> mp3_{};
+	std::unique_ptr<drmp3> mp3_{};
 	AudioDataFormat header_{};
 };
 

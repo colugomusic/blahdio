@@ -13,65 +13,70 @@ struct WAV
 {
 	WAV() = default;
 	WAV(const WAV&) = delete;
+	WAV(WAV&& rhs) noexcept = default;
 	auto operator=(const WAV&&) -> WAV& = delete;
 
-	WAV(WAV&& rhs) : wav_{rhs.wav_}, header_{rhs.header_} { rhs.wav_ = std::nullopt; }
-	auto operator=(WAV&& rhs) -> WAV& { wav_ = rhs.wav_; rhs.wav_ = std::nullopt; return *this; }
+	auto operator=(WAV&& rhs) noexcept -> WAV&
+	{
+		wav_ = std::move(rhs.wav_);
+		header_ = rhs.header_;
+		return *this;
+	}
 
 	~WAV()
 	{
 		if (wav_)
 		{
-			drwav_uninit(&wav_.value());
+			drwav_uninit(wav_.get());
 		}
 	}
 
-	operator bool() const { return wav_.has_value(); }
-	operator drwav*() { return &wav_.value(); }
+	operator bool() const { return bool(wav_); }
+	operator drwav*() { return wav_.get(); }
 	auto get_header_info() const { return header_; }
 
 	[[nodiscard]] static
 	auto file(std::string_view utf8_path) -> expected<WAV>
 	{
-		drwav wav;
+		auto wav{std::make_unique<drwav>()};
 
-		if (!dr_libs::wav::init_file(&wav, utf8_path))
+		if (!dr_libs::wav::init_file(wav.get(), utf8_path))
 		{
 			return tl::make_unexpected(fmt::format("Failed to open WAV decoder for file: '{}'", utf8_path));
 		}
 
-		return WAV{wav};
+		return WAV{std::move(wav)};
 	}
 
 	[[nodiscard]] static
 	auto memory(const void* data, size_t data_size) -> expected<WAV>
 	{
-		drwav wav;
+		auto wav{std::make_unique<drwav>()};
 
-		if (!drwav_init_memory(&wav, data, data_size, nullptr))
+		if (!drwav_init_memory(wav.get(), data, data_size, nullptr))
 		{
 			return tl::make_unexpected("Failed to open WAV decoder for memory");
 		}
 
-		return WAV{wav};
+		return WAV{std::move(wav)};
 	}
 
 	[[nodiscard]] static
 	auto stream(drwav_read_proc on_read, drwav_seek_proc on_seek, void* user_data) -> expected<WAV>
 	{
-		drwav wav;
+		auto wav{std::make_unique<drwav>()};
 
-		if (!drwav_init(&wav, on_read, on_seek, user_data, nullptr))
+		if (!drwav_init(wav.get(), on_read, on_seek, user_data, nullptr))
 		{
 			return tl::make_unexpected("Failed to open WAV decoder for stream");
 		}
 		
-		return WAV{wav};
+		return WAV{std::move(wav)};
 	}
 
 private:
 
-	WAV(drwav wav) : wav_{wav} , header_{get_header_info(wav)} {}
+	WAV(std::unique_ptr<drwav> wav) : wav_{std::move(wav)} , header_{get_header_info(*wav_)} {}
 
 	[[nodiscard]] static
 	auto get_header_info(const drwav& wav) -> AudioDataFormat
@@ -87,7 +92,7 @@ private:
 		return out;
 	}
 
-	std::optional<drwav> wav_{};
+	std::unique_ptr<drwav> wav_;
 	AudioDataFormat header_{};
 };
 
