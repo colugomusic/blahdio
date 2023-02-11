@@ -51,6 +51,7 @@ private:
 
 	struct Concept
 	{
+		virtual ~Concept() {}
 		virtual auto type() const -> AudioType = 0;
 		virtual auto try_read_header() -> expected<AudioDataFormat> = 0;
 		virtual auto read_frames(AudioReader::Callbacks callbacks, const AudioDataFormat& format, uint32_t chunk_size) -> expected<void> = 0;
