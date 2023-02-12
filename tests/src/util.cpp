@@ -115,7 +115,6 @@ auto to_string(AudioType audio_type) -> std::string_view
 	switch (audio_type)
 	{
 		case AudioType::none: return "None";
-		case AudioType::binary: return "Binary";
 		case AudioType::flac: return "FLAC";
 		case AudioType::mp3: return "MP3";
 		case AudioType::wav: return "WAV";
@@ -141,7 +140,6 @@ auto get_ext(AudioType audio_type) -> std::string_view
 	switch (audio_type)
 	{
 		case AudioType::none: return "";
-		case AudioType::binary: return "bin";
 		default:
 		{
 			const auto ext{blahdio::get_file_extension(audio_type)};

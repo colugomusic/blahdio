@@ -18,11 +18,6 @@ AudioReader::AudioReader(const blahdio::AudioReader::Stream& stream, AudioTypeHi
 {
 }
 
-void AudioReader::set_binary_frame_size(int frame_size)
-{
-	impl_->set_binary_frame_size(frame_size);
-}
-
 auto AudioReader::read_header() -> expected<AudioDataFormat>
 {
 	return impl_->read_header();

@@ -5,7 +5,6 @@ namespace blahdio {
 enum class AudioType
 {
 	none,
-	binary,
 	flac,
 	mp3,
 	wav,
@@ -14,10 +13,6 @@ enum class AudioType
 
 enum class AudioTypeHint
 {
-	// Audio type is not deduced. It is just read
-	// as raw binary data
-	binary,
-
 	// Audio type will be deduced by trying to read
 	// the header as each supported type, starting
 	// with the one specified

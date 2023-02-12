@@ -67,15 +67,6 @@ list(APPEND SRC
 	src/read/typed_read_handler.h
 	src/read/typed_read_handler.cpp
 
-	src/read/binary/binary_file_reader.h
-	src/read/binary/binary_file_reader.cpp
-	src/read/binary/binary_memory_reader.h
-	src/read/binary/binary_memory_reader.cpp
-	src/read/binary/binary_reader.h
-	src/read/binary/binary_reader.cpp
-	src/read/binary/binary_stream_reader.h
-	src/read/binary/binary_stream_reader.cpp
-	
 	src/write/audio_writer.cpp
 	src/write/typed_write_handler.h
 	src/write/typed_write_handler.cpp
