@@ -7,7 +7,6 @@ This is an audio file reader/writer library which supports the following file ty
 - MP3
 - FLAC
 - WavPack (Pure/lossless mode only)
-- Raw untyped bytes
 
 #### Writing
 - WAV
