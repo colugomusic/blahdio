@@ -43,7 +43,7 @@ Blahdio is implemented using these libraries:
 // file extension will be tried. If it's set to true, every supported file
 // type will be tried until we successfully read a valid header, but we will
 // start with the type deduced from the file extension.
-auto type_hint = blahdio::type_hint_for_file(utf8_file_path, true);
+auto type_hint = blahdio::type_hint_for_file_extension(get_file_extension(utf8_file_path), true);
 
 if (!type_hint)
 {
