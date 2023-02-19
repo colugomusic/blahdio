@@ -2,6 +2,7 @@
 
 #include <array>
 #include <string>
+#include <vector>
 #include "expected.h"
 #include "audio_type.h"
 
