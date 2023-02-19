@@ -46,15 +46,15 @@ bool Reader::try_read_header()
 		{
 			const auto divisor = (1 << (bit_depth_ - 1)) - 1;
 
-			std::vector<std::int32_t> frames(size_t(num_channels_) * read_size);
+			unpacked_samples_buffer_.resize(size_t(num_channels_) * read_size);
 
-			const auto frames_read = WavpackUnpackSamples(context_, frames.data(), read_size);
+			const auto frames_read = WavpackUnpackSamples(context_, unpacked_samples_buffer_.data(), read_size);
 
-			if (frames_read < read_size) return frames_read;
+			unpacked_samples_buffer_.resize(frames_read * num_channels_);
 
-			for (uint32_t i = 0; i < read_size * num_channels_; i++)
+			for (uint32_t i = 0; i < frames_read * num_channels_; i++)
 			{
-				buffer[i] = float(frames[i]) / divisor;
+				buffer[i] = float(unpacked_samples_buffer_[i]) / divisor;
 			}
 
 			return frames_read;
@@ -81,9 +81,7 @@ auto Reader::read_all_frames(Callbacks callbacks, uint32_t chunk_size) -> expect
 
 uint32_t Reader::read_frames(uint32_t frames_to_read, float* buffer)
 {
-	std::vector<float> interleaved_frames(frames_to_read * num_channels_);
-
-	return chunk_reader_(interleaved_frames.data(), frames_to_read);
+	return chunk_reader_(buffer, frames_to_read);
 }
 
 auto Reader::do_read_all_frames(Callbacks callbacks, uint32_t chunk_size, ChunkReader chunk_reader) -> expected<void>

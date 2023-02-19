@@ -28,6 +28,7 @@ private:
 
 	WavpackContext* context_ = nullptr;
 	ChunkReader chunk_reader_;
+	std::vector<std::int32_t> unpacked_samples_buffer_;
 
 	virtual WavpackContext* open() = 0;
 
