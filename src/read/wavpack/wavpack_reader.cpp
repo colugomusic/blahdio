@@ -2,7 +2,6 @@
 #include "wavpack_file_reader.h"
 #include "wavpack_stream_reader.h"
 #include "wavpack_memory_reader.h"
-#include <filesystem>
 #include <fstream>
 #include <vector>
 #include <wavpack.h>

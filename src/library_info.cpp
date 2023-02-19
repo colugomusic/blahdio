@@ -78,20 +78,19 @@ auto get_type_hint(const TypeInfo& info, bool try_all_supported_types) -> AudioT
 }
 
 [[nodiscard]]
-auto type_hint_for_file(std::filesystem::path file_path, bool try_all_supported_types) -> expected<AudioTypeHint>
+auto type_hint_for_file_extension(std::string file_extension, bool try_all_supported_types) -> expected<AudioTypeHint>
 {
 	const auto toupper = [](std::string str) {
 		std::transform(str.begin(), str.end(), str.begin(), [](char c) { return std::toupper(c); });
 		return str;
 	};
 
-	const auto ext{file_path.extension().string().substr(1)};
-	const auto upper_ext{toupper(ext)};
+	const auto upper_ext{toupper(file_extension)};
 	const auto pos{find(TABLE, std::string_view{upper_ext})};
 
 	if (pos == TABLE.end())
 	{
-		return tl::make_unexpected(fmt::format("Unrecognized file extension: {}", ext));
+		return tl::make_unexpected(fmt::format("Unrecognized file extension: {}", file_extension));
 	}
 
 	return get_type_hint(*pos, try_all_supported_types);
