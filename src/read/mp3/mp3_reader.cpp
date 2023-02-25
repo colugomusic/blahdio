@@ -75,7 +75,7 @@ struct MP3
 
 private:
 
-	MP3(std::unique_ptr<drmp3> mp3) : mp3_{std::move(mp3)}, header_{get_header_info(mp3.get())} {}
+	MP3(std::unique_ptr<drmp3> mp3) : mp3_{std::move(mp3)}, header_{get_header_info(mp3_.get())} {}
 
 	[[nodiscard]] static
 	auto get_header_info(drmp3* mp3) -> AudioDataFormat
