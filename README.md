@@ -53,7 +53,7 @@ if (!type_hint)
 }
 
 // Create the reader
-blahdio::AudioReader reader(utf8_file_path, type_hint);
+blahdio::AudioReader reader(utf8_file_path, *type_hint);
 
 // Read the header. 
 const auto format = reader.read_header();
