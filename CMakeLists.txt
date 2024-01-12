@@ -17,7 +17,7 @@ CPMAddPackage(NAME dr_libs GITHUB_REPOSITORY "mackron/dr_libs" GIT_TAG master DO
 CPMAddPackage(NAME miniaudio GITHUB_REPOSITORY "mackron/miniaudio" GIT_TAG master DOWNLOAD_ONLY YES)
 endif()
 
-CPMAddPackage(NAME fmt GITHUB_REPOSITORY "fmtlib/fmt" GIT_TAG 9.1.0)
+CPMAddPackage(NAME fmt GITHUB_REPOSITORY "fmtlib/fmt" GIT_TAG 10.1.1)
 CPMAddPackage(NAME expected GITHUB_REPOSITORY "TartanLlama/expected" GIT_TAG master DOWNLOAD_ONLY YES)
 CPMAddPackage(NAME utfcpp GITHUB_REPOSITORY "nemtrif/utfcpp" GIT_TAG master DOWNLOAD_ONLY YES)
 
