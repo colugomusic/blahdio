@@ -13,8 +13,8 @@ class AudioStreamer
 public:
 
 	AudioStreamer();
-	AudioStreamer(AudioStreamer&&);
-	auto operator=(AudioStreamer&&) -> AudioStreamer&;
+	AudioStreamer(AudioStreamer&&) noexcept;
+	auto operator=(AudioStreamer&&)  noexcept-> AudioStreamer&;
 	AudioStreamer(std::shared_ptr<impl::AudioReader> reader);
 	~AudioStreamer();
 

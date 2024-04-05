@@ -4,8 +4,8 @@
 namespace blahdio {
 
 AudioStreamer::AudioStreamer() = default;
-AudioStreamer::AudioStreamer(AudioStreamer&&) = default;
-auto AudioStreamer::operator=(AudioStreamer&&) -> AudioStreamer& = default;
+AudioStreamer::AudioStreamer(AudioStreamer&&) noexcept = default;
+auto AudioStreamer::operator=(AudioStreamer&&) noexcept -> AudioStreamer& = default;
 
 AudioStreamer::AudioStreamer(std::shared_ptr<impl::AudioReader> reader)
 	: impl_{std::make_unique<impl::AudioStreamer>(reader)}
