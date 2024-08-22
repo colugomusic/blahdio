@@ -38,6 +38,7 @@ static void wavpack_write_file(WavpackBlockOutput blockout, void* id, const Audi
 			config.float_norm_exp = NORMALIZED_FLOAT;
 			break;
 		}
+        default: break;
 	}
 
 	if (!WavpackSetConfiguration64(context, &config, format.num_frames, nullptr))
@@ -98,6 +99,7 @@ static void wavpack_write_file(WavpackBlockOutput blockout, void* id, const Audi
 				
 				break;
 			}
+            default: break;
 		}
 
 		frame += write_size;
