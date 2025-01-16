@@ -8,6 +8,8 @@ option(BLAHDIO_ENABLE_WAVPACK "Enable WavPack support" ON)
 option(BLAHDIO_BUILD_TESTS "Build tests" OFF)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
+set(debug_build $<OR:$<CONFIG:Debug>,$<STREQUAL:${CMAKE_BUILD_TYPE},Debug}>>)
+set(prebuilt-lib-config $<IF:${debug_build},debug,release>)
 
 include(CPM)
 
@@ -21,28 +23,33 @@ CPMAddPackage(NAME fmt GITHUB_REPOSITORY "fmtlib/fmt" GIT_TAG 10.1.1)
 CPMAddPackage(NAME expected GITHUB_REPOSITORY "TartanLlama/expected" GIT_TAG master DOWNLOAD_ONLY YES)
 CPMAddPackage(NAME utfcpp GITHUB_REPOSITORY "nemtrif/utfcpp" GIT_TAG master DOWNLOAD_ONLY YES)
 
-list(APPEND include_dirs
+list(APPEND blahdio-include-dirs
 	${dr_libs_SOURCE_DIR}
 	${expected_SOURCE_DIR}/include
 	${fmt_SOURCE_DIR}/include
 	${miniaudio_SOURCE_DIR}
 	${utfcpp_SOURCE_DIR}/source
 )
-list(APPEND link_libs fmt::fmt)
+list(APPEND blahdio-link-libs fmt::fmt)
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # WavPack #######################################################
 if (BLAHDIO_ENABLE_WAVPACK)
-	set(WAVPACK_BUILD_COOLEDIT_PLUGIN OFF CACHE BOOL "Build CoolEdit plugin" FORCE)
-	set(WAVPACK_BUILD_WINAMP_PLUGIN OFF CACHE BOOL "Build WinAmp plugin" FORCE)
-	set(WAVPACK_BUILD_PROGRAMS OFF CACHE BOOL "Build programs" FORCE)
-	set(WAVPACK_BUILD_DOCS OFF CACHE BOOL "Build documentation" FORCE)
-	set(WAVPACK_ENABLE_LIBCRYPTO OFF CACHE BOOL "Use libcrypto" FORCE)
-	set(BUILD_TESTING OFF CACHE BOOL "Build tests" FORCE)
-	set(BUILD_SHARED_LIBS OFF)
-	CPMAddPackage("gh:dbry/wavpack#5.6.0")
-	list(APPEND include_dirs ${wavpack_SOURCE_DIR}/include)
-	list(APPEND link_libs wavpack)
+	if (BLAHDIO_PREBUILT_WAVPACK_PREFIX)
+		list(APPEND blahdio-include-dirs ${BLAHDIO_PREBUILT_WAVPACK_PREFIX}/include/wavpack)
+		list(APPEND blahdio-link-libs ${BLAHDIO_PREBUILT_WAVPACK_PREFIX}/lib/libwavpack-${prebuilt-lib-config}${CMAKE_STATIC_LIBRARY_SUFFIX})
+	else()
+		set(WAVPACK_BUILD_COOLEDIT_PLUGIN OFF CACHE BOOL "Build CoolEdit plugin" FORCE)
+		set(WAVPACK_BUILD_WINAMP_PLUGIN OFF CACHE BOOL "Build WinAmp plugin" FORCE)
+		set(WAVPACK_BUILD_PROGRAMS OFF CACHE BOOL "Build programs" FORCE)
+		set(WAVPACK_BUILD_DOCS OFF CACHE BOOL "Build documentation" FORCE)
+		set(WAVPACK_ENABLE_LIBCRYPTO OFF CACHE BOOL "Use libcrypto" FORCE)
+		set(BUILD_TESTING OFF CACHE BOOL "Build tests" FORCE)
+		set(BUILD_SHARED_LIBS OFF)
+		CPMAddPackage("gh:dbry/wavpack#5.6.0")
+		list(APPEND blahdio-include-dirs ${wavpack_SOURCE_DIR}/include)
+		list(APPEND blahdio-link-libs wavpack)
+	endif()
 endif()
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
@@ -128,15 +135,15 @@ add_library(${PROJECT_NAME} STATIC ${PUBLIC_HEADERS} ${SRC})
 
 target_include_directories(${PROJECT_NAME} PUBLIC
 	include
-	${include_dirs}
+	${blahdio-include-dirs}
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
 	src
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
-	${link_libs}
+target_link_libraries(${PROJECT_NAME} PUBLIC
+	${blahdio-link-libs}
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
