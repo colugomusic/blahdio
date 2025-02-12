@@ -1,5 +1,5 @@
 #include <algorithm>
-#include <fmt/format.h>
+#include <format>
 #include "blahdio/library_info.h"
 
 using namespace std::literals::string_view_literals;
@@ -90,7 +90,7 @@ auto type_hint_for_file_extension(std::string file_extension, bool try_all_suppo
 
 	if (pos == TABLE.end())
 	{
-		return tl::make_unexpected(fmt::format("Unrecognized file extension: {}", file_extension));
+		return tl::make_unexpected(std::format("Unrecognized file extension: {}", file_extension));
 	}
 
 	return get_type_hint(*pos, try_all_supported_types);
@@ -103,7 +103,7 @@ auto type_hint_for_type(AudioType type, bool try_all_supported_types) -> expecte
 
 	if (pos == TABLE.end())
 	{
-		return tl::make_unexpected(fmt::format("Invalid audio type"));
+		return tl::make_unexpected(std::format("Invalid audio type"));
 	}
 
 	return get_type_hint(*pos, try_all_supported_types);

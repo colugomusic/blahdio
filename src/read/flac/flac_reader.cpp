@@ -1,6 +1,6 @@
 #include <cassert>
 #include <optional>
-#include <fmt/format.h>
+#include <format>
 #include "flac_reader.h"
 #include "mackron/blahdio_dr_libs.h"
 
@@ -36,7 +36,7 @@ struct FLAC
 
 		if (!flac)
 		{
-			return tl::make_unexpected(fmt::format("Failed to open FLAC decoder for file: '{}'", utf8_path));
+			return tl::make_unexpected(std::format("Failed to open FLAC decoder for file: '{}'", utf8_path));
 		}
 
 		return FLAC{flac};

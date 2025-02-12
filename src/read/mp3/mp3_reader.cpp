@@ -1,6 +1,6 @@
 #include <cassert>
 #include <optional>
-#include <fmt/format.h>
+#include <format>
 #include "mp3_reader.h"
 #include "mackron/blahdio_dr_libs.h"
 
@@ -41,7 +41,7 @@ struct MP3
 
 		if (!dr_libs::mp3::init_file(mp3.get(), utf8_path))
 		{
-			return tl::make_unexpected(fmt::format("Failed to open MP3 decoder for file: '{}'", utf8_path));
+			return tl::make_unexpected(std::format("Failed to open MP3 decoder for file: '{}'", utf8_path));
 		}
 
 		return MP3{std::move(mp3)};

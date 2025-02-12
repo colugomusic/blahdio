@@ -15,7 +15,7 @@ list(APPEND blahdio-include-dirs
 	extern/submodules/dr_libs
 	extern/submodules/expected/include
 	extern/submodules/miniaudio
-	extern/submodules/utfcpp/include
+	extern/submodules/utfcpp/source
 )
 list(APPEND blahdio-link-libs)
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -134,11 +134,11 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
-	CXX_STANDARD 17
+	CXX_STANDARD 20
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-	UTF_CPP_CPLUSPLUS=201703L
+	UTF_CPP_CPLUSPLUS=202002L
 	MA_NO_WASAPI
 	MA_NO_DSOUND
 	MA_NO_WINMM

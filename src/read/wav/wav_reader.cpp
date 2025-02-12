@@ -1,6 +1,6 @@
 #include <cassert>
 #include <optional>
-#include <fmt/format.h>
+#include <format>
 #include "wav_reader.h"
 #include "blahdio/audio_writer.h"
 #include "mackron/blahdio_dr_libs.h"
@@ -42,7 +42,7 @@ struct WAV
 
 		if (!dr_libs::wav::init_file(wav.get(), utf8_path))
 		{
-			return tl::make_unexpected(fmt::format("Failed to open WAV decoder for file: '{}'", utf8_path));
+			return tl::make_unexpected(std::format("Failed to open WAV decoder for file: '{}'", utf8_path));
 		}
 
 		return WAV{std::move(wav)};
