@@ -7,30 +7,17 @@ option(BLAHDIO_ENABLE_WAV "Enable WAV support" ON)
 option(BLAHDIO_ENABLE_WAVPACK "Enable WavPack support" ON)
 option(BLAHDIO_BUILD_TESTS "Build tests" OFF)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
 set(debug_build $<OR:$<CONFIG:Debug>,$<STREQUAL:${CMAKE_BUILD_TYPE},Debug}>>)
 set(prebuilt-lib-config $<IF:${debug_build},debug,release>)
 
-include(CPM)
-
 ############# libraries #########################################
-if (BLAHDIO_ENABLE_FLAC OR BLAHDIO_ENABLE_MP3 OR BLAHDIO_ENABLE_WAV)
-CPMAddPackage(NAME dr_libs GITHUB_REPOSITORY "mackron/dr_libs" GIT_TAG master DOWNLOAD_ONLY YES)
-CPMAddPackage(NAME miniaudio GITHUB_REPOSITORY "mackron/miniaudio" GIT_TAG master DOWNLOAD_ONLY YES)
-endif()
-
-CPMAddPackage(NAME fmt GITHUB_REPOSITORY "fmtlib/fmt" GIT_TAG 10.1.1)
-CPMAddPackage(NAME expected GITHUB_REPOSITORY "TartanLlama/expected" GIT_TAG master DOWNLOAD_ONLY YES)
-CPMAddPackage(NAME utfcpp GITHUB_REPOSITORY "nemtrif/utfcpp" GIT_TAG master DOWNLOAD_ONLY YES)
-
 list(APPEND blahdio-include-dirs
-	${dr_libs_SOURCE_DIR}
-	${expected_SOURCE_DIR}/include
-	${fmt_SOURCE_DIR}/include
-	${miniaudio_SOURCE_DIR}
-	${utfcpp_SOURCE_DIR}/source
+	extern/submodules/dr_libs
+	extern/submodules/expected/include
+	extern/submodules/miniaudio
+	extern/submodules/utfcpp/include
 )
-list(APPEND blahdio-link-libs fmt::fmt)
+list(APPEND blahdio-link-libs)
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # WavPack #######################################################
@@ -46,8 +33,8 @@ if (BLAHDIO_ENABLE_WAVPACK)
 		set(WAVPACK_ENABLE_LIBCRYPTO OFF CACHE BOOL "Use libcrypto" FORCE)
 		set(BUILD_TESTING OFF CACHE BOOL "Build tests" FORCE)
 		set(BUILD_SHARED_LIBS OFF)
-		CPMAddPackage("gh:dbry/wavpack#5.6.0")
-		list(APPEND blahdio-include-dirs ${wavpack_SOURCE_DIR}/include)
+		add_subdirectory(extern/submodules/wavpack)
+		list(APPEND blahdio-include-dirs extern/submodules/wavpack/include)
 		list(APPEND blahdio-link-libs wavpack)
 	endif()
 endif()
