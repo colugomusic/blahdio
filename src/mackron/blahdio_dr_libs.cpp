@@ -42,20 +42,28 @@ namespace wav {
 
 bool init_file(drwav* wav, std::string_view utf8_path)
 {
-#ifdef _WIN32
-	return drwav_init_file_w(wav, (const wchar_t*)(utf8::utf8to16(utf8_path).data()), nullptr);
-#else
-	return drwav_init_file(wav, utf8_path.data(), nullptr);
-#endif
+	if (sizeof(wchar_t) == 2)
+	{
+		return drwav_init_file_w(wav, (const wchar_t*)(utf8::utf8to16(utf8_path).data()), nullptr);
+	}
+	if (sizeof(wchar_t) == 4)
+	{
+		return drwav_init_file_w(wav, (const wchar_t*)(utf8::utf8to32(utf8_path).data()), nullptr);
+	}
+	assert (false);
 }
 
 bool init_file_write(drwav* wav, std::string_view utf8_path, const drwav_data_format* format)
 {
-#ifdef _WIN32
-	return drwav_init_file_write_w(wav, (const wchar_t*)(utf8::utf8to16(utf8_path).data()), format, nullptr);
-#else
-	return drwav_init_file_write(wav, utf8_path.data(), format, nullptr);
-#endif
+	if (sizeof(wchar_t) == 2)
+	{
+		return drwav_init_file_write_w(wav, (const wchar_t*)(utf8::utf8to16(utf8_path).data()), format, nullptr);
+	}
+	if (sizeof(wchar_t) == 4)
+	{
+		return drwav_init_file_write_w(wav, (const wchar_t*)(utf8::utf8to32(utf8_path).data()), format, nullptr);
+	}
+	assert (false);
 }
 
 } // wav
