@@ -10,44 +10,13 @@ option(BLAHDIO_BUILD_TESTS "Build tests" OFF)
 set(debug_build $<OR:$<CONFIG:Debug>,$<STREQUAL:${CMAKE_BUILD_TYPE},Debug}>>)
 set(prebuilt-lib-config $<IF:${debug_build},debug,release>)
 
-############# libraries #########################################
-list(APPEND blahdio-include-dirs
-	extern/submodules/dr_libs
-	extern/submodules/expected/include
-	extern/submodules/miniaudio
-	extern/submodules/utfcpp/source
-)
-list(APPEND blahdio-link-libs)
-#xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-# WavPack #######################################################
+find_package(dr_libs REQUIRED)
+find_package(miniaudio REQUIRED)
+find_package(tl-expected REQUIRED)
+find_package(utf8cpp REQUIRED)
 if (BLAHDIO_ENABLE_WAVPACK)
-	if (BLAHDIO_PREBUILT_WAVPACK_PREFIX)
-		list(APPEND blahdio-include-dirs ${BLAHDIO_PREBUILT_WAVPACK_PREFIX}/include/wavpack)
-		list(APPEND blahdio-link-libs ${BLAHDIO_PREBUILT_WAVPACK_PREFIX}/lib/libwavpack-${prebuilt-lib-config}${CMAKE_STATIC_LIBRARY_SUFFIX})
-	else()
-		set(WAVPACK_BUILD_COOLEDIT_PLUGIN OFF CACHE BOOL "Build CoolEdit plugin" FORCE)
-		set(WAVPACK_BUILD_WINAMP_PLUGIN OFF CACHE BOOL "Build WinAmp plugin" FORCE)
-		set(WAVPACK_BUILD_PROGRAMS OFF CACHE BOOL "Build programs" FORCE)
-		set(WAVPACK_BUILD_DOCS OFF CACHE BOOL "Build documentation" FORCE)
-		set(WAVPACK_ENABLE_LIBCRYPTO OFF CACHE BOOL "Use libcrypto" FORCE)
-		set(BUILD_TESTING OFF CACHE BOOL "Build tests" FORCE)
-		set(BUILD_SHARED_LIBS OFF)
-		add_subdirectory(extern/submodules/wavpack)
-		list(APPEND blahdio-include-dirs extern/submodules/wavpack/include)
-		list(APPEND blahdio-link-libs wavpack)
-	endif()
+	find_package(wavpack REQUIRED)
 endif()
-#xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-list(APPEND PUBLIC_HEADERS
-	include/blahdio/audio_data_format.h
-	include/blahdio/audio_reader.h
-	include/blahdio/audio_streamer.h
-	include/blahdio/audio_writer.h
-	include/blahdio/audio_type.h
-	include/blahdio/library_info.h
-)
 
 list(APPEND SRC
 	src/library_info.cpp
@@ -113,31 +82,45 @@ if (BLAHDIO_ENABLE_FLAC OR BLAHDIO_ENABLE_MP3 OR BLAHDIO_ENABLE_WAV)
 	)
 endif()
 
-# VS source groups ##############################################
-source_group(TREE ${CMAKE_CURRENT_LIST_DIR}/include/blahdio PREFIX "public headers" FILES ${PUBLIC_HEADERS})
-source_group(TREE ${CMAKE_CURRENT_LIST_DIR}/src PREFIX "src" FILES ${SRC})
-#xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+add_library(blahdio STATIC ${SRC})
 
-add_library(${PROJECT_NAME} STATIC ${PUBLIC_HEADERS} ${SRC})
-
-target_include_directories(${PROJECT_NAME} PUBLIC
-	include
-	${blahdio-include-dirs}
+target_sources(blahdio INTERFACE
+	FILE_SET HEADERS
+		BASE_DIRS
+			include
+		FILES
+			include/blahdio/audio_data_format.h
+			include/blahdio/audio_reader.h
+			include/blahdio/audio_streamer.h
+			include/blahdio/audio_writer.h
+			include/blahdio/audio_type.h
+			include/blahdio/expected.h
+			include/blahdio/library_info.h
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(blahdio PUBLIC
+	include
+)
+
+target_include_directories(blahdio PRIVATE
 	src
 )
 
-target_link_libraries(${PROJECT_NAME} PUBLIC
-	${blahdio-link-libs}
-)
+target_link_libraries(blahdio PUBLIC tl::expected utf8cpp)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
+if (BLAHDIO_ENABLE_WAVPACK)
+	target_link_libraries(blahdio PUBLIC wavpack::wavpack)
+endif()
+
+if (BLAHDIO_ENABLE_FLAC OR BLAHDIO_ENABLE_MP3 OR BLAHDIO_ENABLE_WAV)
+	target_link_libraries(blahdio PUBLIC dr_libs::dr_libs miniaudio::miniaudio)
+endif()
+
+set_target_properties(blahdio PROPERTIES
 	CXX_STANDARD 20
 )
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE
+target_compile_definitions(blahdio PRIVATE
 	UTF_CPP_CPLUSPLUS=202002L
 	MA_NO_WASAPI
 	MA_NO_DSOUND
@@ -167,15 +150,18 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 	$<$<BOOL:${BLAHDIO_ENABLE_WAVPACK}>:BLAHDIO_ENABLE_WAVPACK>
 )
 
-if (BLAHDIO_BUILD_TESTS)
+install(TARGETS blahdio
+	ARCHIVE DESTINATION lib
+	LIBRARY DESTINATION lib
+	FRAMEWORK DESTINATION lib
+	FILE_SET HEADERS
+)
 
+if (BLAHDIO_BUILD_TESTS)
 	include(CTest)
 	enable_testing()
-
 	add_subdirectory(tests)
-
 	add_test(NAME tests
 		COMMAND blahdio_tests
 	)
-
 endif()
