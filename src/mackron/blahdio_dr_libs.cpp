@@ -42,6 +42,9 @@ namespace wav {
 
 bool init_file(drwav* wav, std::string_view utf8_path)
 {
+#ifdef __APPLE__
+    return drwav_init_file(wav, utf8_path.data(), nullptr);
+#else
 	if (sizeof(wchar_t) == 2)
 	{
 		return drwav_init_file_w(wav, (const wchar_t*)(utf8::utf8to16(utf8_path).data()), nullptr);
@@ -51,10 +54,14 @@ bool init_file(drwav* wav, std::string_view utf8_path)
 		return drwav_init_file_w(wav, (const wchar_t*)(utf8::utf8to32(utf8_path).data()), nullptr);
 	}
 	assert (false);
+#endif
 }
 
 bool init_file_write(drwav* wav, std::string_view utf8_path, const drwav_data_format* format)
 {
+#ifdef __APPLE__
+    return drwav_init_file_write(wav, utf8_path.data(), format, nullptr);
+#else
 	if (sizeof(wchar_t) == 2)
 	{
 		return drwav_init_file_write_w(wav, (const wchar_t*)(utf8::utf8to16(utf8_path).data()), format, nullptr);
@@ -64,6 +71,7 @@ bool init_file_write(drwav* wav, std::string_view utf8_path, const drwav_data_fo
 		return drwav_init_file_write_w(wav, (const wchar_t*)(utf8::utf8to32(utf8_path).data()), format, nullptr);
 	}
 	assert (false);
+#endif
 }
 
 } // wav
