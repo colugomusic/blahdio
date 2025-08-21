@@ -22,21 +22,7 @@ list(APPEND blahdio-link-libs)
 
 # WavPack #######################################################
 if (BLAHDIO_ENABLE_WAVPACK)
-	if (BLAHDIO_PREBUILT_WAVPACK_PREFIX)
-		list(APPEND blahdio-include-dirs ${BLAHDIO_PREBUILT_WAVPACK_PREFIX}/include/wavpack)
-		list(APPEND blahdio-link-libs ${BLAHDIO_PREBUILT_WAVPACK_PREFIX}/lib/libwavpack-${prebuilt-lib-config}${CMAKE_STATIC_LIBRARY_SUFFIX})
-	else()
-		set(WAVPACK_BUILD_COOLEDIT_PLUGIN OFF CACHE BOOL "Build CoolEdit plugin" FORCE)
-		set(WAVPACK_BUILD_WINAMP_PLUGIN OFF CACHE BOOL "Build WinAmp plugin" FORCE)
-		set(WAVPACK_BUILD_PROGRAMS OFF CACHE BOOL "Build programs" FORCE)
-		set(WAVPACK_BUILD_DOCS OFF CACHE BOOL "Build documentation" FORCE)
-		set(WAVPACK_ENABLE_LIBCRYPTO OFF CACHE BOOL "Use libcrypto" FORCE)
-		set(BUILD_TESTING OFF CACHE BOOL "Build tests" FORCE)
-		set(BUILD_SHARED_LIBS OFF)
-		add_subdirectory(extern/submodules/wavpack)
-		list(APPEND blahdio-include-dirs extern/submodules/wavpack/include)
-		list(APPEND blahdio-link-libs wavpack)
-	endif()
+	find_package(wavpack REQUIRED CONFIG)
 endif()
 #xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
@@ -132,6 +118,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 target_link_libraries(${PROJECT_NAME} PUBLIC
 	${blahdio-link-libs}
 )
+
+if (BLAHDIO_ENABLE_WAVPACK)
+	target_link_libraries(${PROJECT_NAME} PUBLIC WavPack::WavPack)
+endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	CXX_STANDARD 20
