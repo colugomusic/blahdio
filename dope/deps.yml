@@ -22,3 +22,9 @@
   build-type:          cmake
   cmake-options:       -DEXPECTED_BUILD_TESTS=OFF
   find-package-name:   tl-expected
+
+- name:                utfcpp
+  url:                 https://github.com/nemtrif/utfcpp/archive/refs/tags/v4.0.6.zip
+  src_subdir:          utfcpp-4.0.6
+  build-type:          cmake
+  find-package-name:   utf8cpp
