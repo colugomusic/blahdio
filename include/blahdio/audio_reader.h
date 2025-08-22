@@ -3,9 +3,9 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include "audio_data_format.h"
-#include "audio_type.h"
-#include "expected.h"
+#include "blahdio/audio_data_format.h"
+#include "blahdio/audio_type.h"
+#include "blahdio/expected.h"
 
 namespace blahdio {
 

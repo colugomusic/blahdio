@@ -16,14 +16,15 @@ add_library(blahdio::blahdio ALIAS blahdio)
 target_sources(blahdio PUBLIC
 	FILE_SET HEADERS
 	BASE_DIRS
-		include/blahdio
+		${CMAKE_CURRENT_SOURCE_DIR}/include
 	FILES
-		include/blahdio/audio_data_format.h
-		include/blahdio/audio_reader.h
-		include/blahdio/audio_streamer.h
-		include/blahdio/audio_writer.h
-		include/blahdio/audio_type.h
-		include/blahdio/library_info.h
+		${CMAKE_CURRENT_SOURCE_DIR}/include/blahdio/audio_data_format.h
+		${CMAKE_CURRENT_SOURCE_DIR}/include/blahdio/audio_reader.h
+		${CMAKE_CURRENT_SOURCE_DIR}/include/blahdio/audio_streamer.h
+		${CMAKE_CURRENT_SOURCE_DIR}/include/blahdio/audio_writer.h
+		${CMAKE_CURRENT_SOURCE_DIR}/include/blahdio/audio_type.h
+		${CMAKE_CURRENT_SOURCE_DIR}/include/blahdio/expected.h
+		${CMAKE_CURRENT_SOURCE_DIR}/include/blahdio/library_info.h
 )
 
 target_sources(blahdio PRIVATE
@@ -42,17 +43,14 @@ target_sources(blahdio PRIVATE
 	src/write/typed_write_handler.cpp
 )
 
-target_include_directories(blahdio PRIVATE
-	include
-	src
-)
+target_include_directories(blahdio PRIVATE include/blahdio src)
 
 target_link_libraries(blahdio PUBLIC tl::expected)
-target_link_libraries(blahdio PRIVATE utf8::cpp)
+target_link_libraries(blahdio PRIVATE $<BUILD_INTERFACE:utf8::cpp>)
 
 if (BLAHDIO_ENABLE_WAVPACK)
 	find_package(wavpack REQUIRED CONFIG)
-	target_link_libraries(blahdio PRIVATE WavPack::WavPack)
+	target_link_libraries(blahdio PUBLIC WavPack::WavPack)
 	target_sources(blahdio PRIVATE
 		src/read/wavpack/wavpack_file_reader.h
 		src/read/wavpack/wavpack_file_reader.cpp
@@ -94,8 +92,8 @@ if (BLAHDIO_ENABLE_FLAC OR BLAHDIO_ENABLE_MP3 OR BLAHDIO_ENABLE_WAV)
 	find_package(dr_libs REQUIRED CONFIG)
 	find_package(miniaudio REQUIRED CONFIG)
 	target_link_libraries(blahdio PRIVATE
-		dr_libs::dr_libs
-		miniaudio::miniaudio
+		$<BUILD_INTERFACE:dr_libs::dr_libs>
+		$<BUILD_INTERFACE:miniaudio::miniaudio>
 	)
 	target_sources(blahdio PRIVATE
 		src/mackron/blahdio_dr_libs.h

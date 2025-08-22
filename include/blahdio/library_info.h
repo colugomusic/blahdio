@@ -3,8 +3,8 @@
 #include <array>
 #include <string>
 #include <vector>
-#include "expected.h"
-#include "audio_type.h"
+#include "blahdio/expected.h"
+#include "blahdio/audio_type.h"
 
 namespace blahdio {
 
