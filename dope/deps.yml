@@ -1,0 +1,24 @@
+- name:                wavpack
+  url:                 https://github.com/dbry/WavPack/archive/refs/tags/5.8.1.zip
+  src_subdir:          WavPack-5.8.1
+  build-type:          cmake
+  cmake-options:       -DWAVPACK_BUILD_PROGRAMS=OFF
+
+- name:                miniaudio
+  url:                 https://github.com/mackron/miniaudio/archive/refs/tags/0.11.22.zip
+  src_subdir:          miniaudio-0.11.22
+  build-type:          cmake
+  add-src-files:       true
+
+- name:                dr_libs
+  git:                 https://github.com/mackron/dr_libs.git
+  tag:                 b962384
+  build-type:          cmake
+  add-src-files:       true
+
+- name:                expected
+  url:                 https://github.com/TartanLlama/expected/archive/refs/tags/v1.2.0.zip
+  src_subdir:          expected-1.2.0
+  build-type:          cmake
+  cmake-options:       -DEXPECTED_BUILD_TESTS=OFF
+  find-package-name:   tl-expected

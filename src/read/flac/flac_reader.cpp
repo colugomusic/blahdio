@@ -58,7 +58,7 @@ struct FLAC
 	[[nodiscard]] static
 	auto stream(drflac_read_proc on_read, drflac_seek_proc on_seek, void* user_data) -> expected<FLAC>
 	{
-		const auto flac{drflac_open(on_read, on_seek, user_data, nullptr)};
+		const auto flac{drflac_open(on_read, on_seek, nullptr, user_data, nullptr)};
 
 		if (!flac)
 		{
@@ -120,8 +120,8 @@ auto convert(drflac_seek_origin drflac_origin) -> AudioReader::Stream::SeekOrigi
 {
 	switch (drflac_origin)
 	{
-		case drflac_seek_origin_start: return AudioReader::Stream::SeekOrigin::Start;
-		case drflac_seek_origin_current: default: return AudioReader::Stream::SeekOrigin::Current;
+		case DRFLAC_SEEK_SET: return AudioReader::Stream::SeekOrigin::Start;
+		case DRFLAC_SEEK_CUR: default: return AudioReader::Stream::SeekOrigin::Current;
 	}
 }
 

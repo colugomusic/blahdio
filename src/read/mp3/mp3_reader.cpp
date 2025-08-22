@@ -65,7 +65,7 @@ struct MP3
 	{
 		auto mp3{std::make_unique<drmp3>()};
 
-		if (!drmp3_init(mp3.get(), on_read, on_seek, user_data, nullptr))
+		if (!drmp3_init(mp3.get(), on_read, on_seek, nullptr, nullptr, user_data, nullptr))
 		{
 			return tl::make_unexpected("Failed to open MP3 decoder for stream");
 		}
@@ -124,8 +124,8 @@ auto convert(drmp3_seek_origin drmp3_origin) -> AudioReader::Stream::SeekOrigin
 {
 	switch (drmp3_origin)
 	{
-		case drmp3_seek_origin_start: return AudioReader::Stream::SeekOrigin::Start;
-		case drmp3_seek_origin_current: default: return AudioReader::Stream::SeekOrigin::Current;
+		case DRMP3_SEEK_SET: return AudioReader::Stream::SeekOrigin::Start;
+		case DRMP3_SEEK_CUR: default: return AudioReader::Stream::SeekOrigin::Current;
 	}
 }
 

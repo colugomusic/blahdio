@@ -41,8 +41,8 @@ static AudioWriter::Stream::SeekOrigin convert(drwav_seek_origin drwav_origin)
 {
 	switch (drwav_origin)
 	{
-		case drwav_seek_origin_start: return AudioWriter::Stream::SeekOrigin::Start;
-		case drwav_seek_origin_current: default: return AudioWriter::Stream::SeekOrigin::Current;
+		case DRWAV_SEEK_SET: return AudioWriter::Stream::SeekOrigin::Start;
+		case DRWAV_SEEK_CUR: default: return AudioWriter::Stream::SeekOrigin::Current;
 	}
 }
 

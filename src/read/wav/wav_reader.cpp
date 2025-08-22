@@ -66,7 +66,7 @@ struct WAV
 	{
 		auto wav{std::make_unique<drwav>()};
 
-		if (!drwav_init(wav.get(), on_read, on_seek, user_data, nullptr))
+		if (!drwav_init(wav.get(), on_read, on_seek, nullptr, user_data, nullptr))
 		{
 			return tl::make_unexpected("Failed to open WAV decoder for stream");
 		}
@@ -123,8 +123,8 @@ auto convert(drwav_seek_origin drwav_origin) -> AudioReader::Stream::SeekOrigin
 {
 	switch (drwav_origin)
 	{
-		case drwav_seek_origin_start: return AudioReader::Stream::SeekOrigin::Start;
-		case drwav_seek_origin_current: default: return AudioReader::Stream::SeekOrigin::Current;
+		case DRWAV_SEEK_SET: return AudioReader::Stream::SeekOrigin::Start;
+		case DRWAV_SEEK_CUR: default: return AudioReader::Stream::SeekOrigin::Current;
 	}
 }
 

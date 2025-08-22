@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.30)
 project(blahdio)
 
 option(BLAHDIO_ENABLE_FLAC "Enable FLAC support" ON)
@@ -7,37 +7,27 @@ option(BLAHDIO_ENABLE_WAV "Enable WAV support" ON)
 option(BLAHDIO_ENABLE_WAVPACK "Enable WavPack support" ON)
 option(BLAHDIO_BUILD_TESTS "Build tests" OFF)
 
-set(debug_build $<OR:$<CONFIG:Debug>,$<STREQUAL:${CMAKE_BUILD_TYPE},Debug}>>)
-set(prebuilt-lib-config $<IF:${debug_build},debug,release>)
+find_package(tl-expected REQUIRED CONFIG)
+find_package(utf8cpp REQUIRED CONFIG)
 
-############# libraries #########################################
-list(APPEND blahdio-include-dirs
-	extern/submodules/dr_libs
-	extern/submodules/expected/include
-	extern/submodules/miniaudio
-	extern/submodules/utfcpp/source
-)
-list(APPEND blahdio-link-libs)
-#xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+add_library(blahdio)
+add_library(blahdio::blahdio ALIAS blahdio)
 
-# WavPack #######################################################
-if (BLAHDIO_ENABLE_WAVPACK)
-	find_package(wavpack REQUIRED CONFIG)
-endif()
-#xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-list(APPEND PUBLIC_HEADERS
-	include/blahdio/audio_data_format.h
-	include/blahdio/audio_reader.h
-	include/blahdio/audio_streamer.h
-	include/blahdio/audio_writer.h
-	include/blahdio/audio_type.h
-	include/blahdio/library_info.h
+target_sources(blahdio PUBLIC
+	FILE_SET HEADERS
+	BASE_DIRS
+		include/blahdio
+	FILES
+		include/blahdio/audio_data_format.h
+		include/blahdio/audio_reader.h
+		include/blahdio/audio_streamer.h
+		include/blahdio/audio_writer.h
+		include/blahdio/audio_type.h
+		include/blahdio/library_info.h
 )
 
-list(APPEND SRC
+target_sources(blahdio PRIVATE
 	src/library_info.cpp
-
 	src/read/audio_reader.cpp
 	src/read/audio_reader_impl.h
 	src/read/audio_reader_impl.cpp
@@ -47,37 +37,23 @@ list(APPEND SRC
 	src/read/generic_reader.h
 	src/read/typed_read_handler.h
 	src/read/typed_read_handler.cpp
-
 	src/write/audio_writer.cpp
 	src/write/typed_write_handler.h
 	src/write/typed_write_handler.cpp
 )
 
-if (BLAHDIO_ENABLE_FLAC)
-	list(APPEND SRC
-		src/read/flac/flac_reader.h
-		src/read/flac/flac_reader.cpp
-	)
-endif()
+target_include_directories(blahdio PRIVATE
+	include
+	src
+)
 
-if (BLAHDIO_ENABLE_MP3)
-	list(APPEND SRC
-		src/read/mp3/mp3_reader.h
-		src/read/mp3/mp3_reader.cpp
-	)
-endif()
-
-if (BLAHDIO_ENABLE_WAV)
-	list(APPEND SRC
-		src/read/wav/wav_reader.h
-		src/read/wav/wav_reader.cpp
-		src/write/wav/wav_writer.h
-		src/write/wav/wav_writer.cpp
-	)
-endif()
+target_link_libraries(blahdio PUBLIC tl::expected)
+target_link_libraries(blahdio PRIVATE utf8::cpp)
 
 if (BLAHDIO_ENABLE_WAVPACK)
-	list(APPEND SRC
+	find_package(wavpack REQUIRED CONFIG)
+	target_link_libraries(blahdio PRIVATE WavPack::WavPack)
+	target_sources(blahdio PRIVATE
 		src/read/wavpack/wavpack_file_reader.h
 		src/read/wavpack/wavpack_file_reader.cpp
 		src/read/wavpack/wavpack_memory_reader.h
@@ -91,43 +67,48 @@ if (BLAHDIO_ENABLE_WAVPACK)
 	)
 endif()
 
+if (BLAHDIO_ENABLE_FLAC)
+	target_sources(blahdio PRIVATE
+		src/read/flac/flac_reader.h
+		src/read/flac/flac_reader.cpp
+	)
+endif()
+
+if (BLAHDIO_ENABLE_MP3)
+	target_sources(blahdio PRIVATE
+		src/read/mp3/mp3_reader.h
+		src/read/mp3/mp3_reader.cpp
+	)
+endif()
+
+if (BLAHDIO_ENABLE_WAV)
+	target_sources(blahdio PRIVATE
+		src/read/wav/wav_reader.h
+		src/read/wav/wav_reader.cpp
+		src/write/wav/wav_writer.h
+		src/write/wav/wav_writer.cpp
+	)
+endif()
+
 if (BLAHDIO_ENABLE_FLAC OR BLAHDIO_ENABLE_MP3 OR BLAHDIO_ENABLE_WAV)
-	list(APPEND SRC
+	find_package(dr_libs REQUIRED CONFIG)
+	find_package(miniaudio REQUIRED CONFIG)
+	target_link_libraries(blahdio PRIVATE
+		dr_libs::dr_libs
+		miniaudio::miniaudio
+	)
+	target_sources(blahdio PRIVATE
 		src/mackron/blahdio_dr_libs.h
 		src/mackron/blahdio_dr_libs.cpp
 		src/mackron/blahdio_miniaudio.cpp
 	)
 endif()
 
-# VS source groups ##############################################
-source_group(TREE ${CMAKE_CURRENT_LIST_DIR}/include/blahdio PREFIX "public headers" FILES ${PUBLIC_HEADERS})
-source_group(TREE ${CMAKE_CURRENT_LIST_DIR}/src PREFIX "src" FILES ${SRC})
-#xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-add_library(${PROJECT_NAME} STATIC ${PUBLIC_HEADERS} ${SRC})
-
-target_include_directories(${PROJECT_NAME} PUBLIC
-	include
-	${blahdio-include-dirs}
-)
-
-target_include_directories(${PROJECT_NAME} PRIVATE
-	src
-)
-
-target_link_libraries(${PROJECT_NAME} PUBLIC
-	${blahdio-link-libs}
-)
-
-if (BLAHDIO_ENABLE_WAVPACK)
-	target_link_libraries(${PROJECT_NAME} PUBLIC WavPack::WavPack)
-endif()
-
-set_target_properties(${PROJECT_NAME} PROPERTIES
+set_target_properties(blahdio PROPERTIES
 	CXX_STANDARD 20
 )
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE
+target_compile_definitions(blahdio PRIVATE
 	UTF_CPP_CPLUSPLUS=202002L
 	MA_NO_WASAPI
 	MA_NO_DSOUND
@@ -158,14 +139,20 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 )
 
 if (BLAHDIO_BUILD_TESTS)
-
 	include(CTest)
 	enable_testing()
-
 	add_subdirectory(tests)
-
 	add_test(NAME tests
 		COMMAND blahdio_tests
 	)
-
 endif()
+
+include(CMakePackageConfigHelpers)
+install(TARGETS blahdio EXPORT blahdioTargets FILE_SET HEADERS)
+install(EXPORT blahdioTargets FILE blahdioTargets.cmake NAMESPACE blahdio:: DESTINATION lib/cmake/blahdio)
+configure_package_config_file(
+    "${CMAKE_CURRENT_LIST_DIR}/cmake/blahdioConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/blahdioConfig.cmake"
+    INSTALL_DESTINATION lib/cmake/blahdio
+)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/blahdioConfig.cmake" DESTINATION lib/cmake/blahdio)
