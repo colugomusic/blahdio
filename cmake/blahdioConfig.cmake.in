@@ -1,6 +1,7 @@
 @PACKAGE_INIT@
 
-find_package(tl-expected REQUIRED CONFIG)
-find_package(wavpack REQUIRED CONFIG)
+include(CMakeFindDependencyMacro)
+find_dependency(tl-expected)
+find_dependency(wavpack)
 
 include("${CMAKE_CURRENT_LIST_DIR}/blahdioTargets.cmake")
